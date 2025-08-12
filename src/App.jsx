@@ -4,7 +4,7 @@ import GlobalStyles from './styles/globalstyles'
 
 const Home = lazy(() => import('./pages/Home'))
 const Login = lazy(() => import('./pages/Auth/Login'))
-const Signin = lazy(() => import('./pages/Auth/Signup'))
+const Signup = lazy(() => import('./pages/Auth/Signup'))
 const ProductList = lazy(() => import('./pages/ProductList'))
 const ProductDetail = lazy(() => import('./pages/ProductDetail'))
 const GroupBuy = lazy(() => import('./pages/GroupBuy'))
@@ -24,7 +24,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/signin" element={<Signin />} />
+          <Route path="/auth/signup" element={<Signup />} />
 
           {/* ######### 2, 3 #########*/}
           {/* 상품 전체 확인 */}
