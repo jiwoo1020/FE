@@ -1,11 +1,11 @@
-import React, { useMemo, useState } from 'react';
-import styled from '@emotion/styled';
-import { FaArrowLeftLong } from 'react-icons/fa6';
-import { IoSearchOutline } from 'react-icons/io5';
-import MonthCalendar from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
-import { format, isToday } from 'date-fns';
-import { ko } from 'date-fns/locale';
+import React, { useMemo, useState } from 'react'
+import styled from '@emotion/styled'
+import { FaArrowLeftLong } from 'react-icons/fa6'
+import { IoSearchOutline } from 'react-icons/io5'
+import MonthCalendar from 'react-calendar'
+import 'react-calendar/dist/Calendar.css'
+import { format, isToday } from 'date-fns'
+import { ko } from 'date-fns/locale'
 
 const Container = styled.div`
   position: relative;
@@ -17,7 +17,7 @@ const Container = styled.div`
   background: #fff;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
-  `;
+`
 
 const Header = styled.div`
   display: flex;
@@ -30,20 +30,20 @@ const Header = styled.div`
   justify-content: center;
   gap: 306px;
   box-sizing: border-box;
-`;
+`
 
 const BackButton = styled(FaArrowLeftLong)`
   width: 25px;
   height: 26px;
   color: #fff;
   cursor: pointer;
-`;
+`
 
 const SearchButton = styled(IoSearchOutline)`
   width: 28px;
   height: 28px;
   color: #fff;
-`;
+`
 
 const Title = styled.h1`
   color: #000;
@@ -52,7 +52,7 @@ const Title = styled.h1`
   font-weight: 200;
   letter-spacing: -0.96px;
   margin-left: 17px;
-`;
+`
 
 const CalendarWrap = styled.div`
   display: flex;
@@ -102,7 +102,7 @@ const CalendarWrap = styled.div`
     color: #000;
     height: var(--tile-h);
     border-radius: 50px;
-    -webkit-tap-highlight-color: transparent;   
+    -webkit-tap-highlight-color: transparent;
     justify-content: center;
     align-items: flex-start;
   }
@@ -157,7 +157,7 @@ const CalendarWrap = styled.div`
   }
 
   .react-calendar__tile--active:enabled:hover::after {
-    background: #1f3906; 
+    background: #1f3906;
   }
 
   .react-calendar__month-view__weekdays__weekday {
@@ -192,7 +192,7 @@ const CalendarWrap = styled.div`
     border-radius: 50%;
     background: #1f3906;
   }
-`;
+`
 
 const EventListContainer = styled.div`
   position: fixed;
@@ -210,7 +210,7 @@ const EventListContainer = styled.div`
   flex-direction: column;
   gap: 6px;
   overflow: hidden; /* 내부 스크롤 영역으로 넘김 */
-`;
+`
 
 const EventContainer = styled.div`
   display: flex;
@@ -218,37 +218,37 @@ const EventContainer = styled.div`
   width: 357px;
   height: 84px;
   gap: 18px;
-`;
+`
 
 const EventInfoContainer = styled.div`
   display: flex;
   flex-direction: row;
   gap: 9px;
   margin-top: 20px;
-`;
+`
 
 const EventIcon = styled.div`
   width: 24px;
   height: 24px;
   border-radius: 24px;
   background-color: gray;
-`;
+`
 
 const EventInfo = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-`;
+`
 
 const EventTitle = styled.div`
   color: #000;
   font-size: 20px;
   font-weight: 400;
-`;
+`
 
 const EventDescription = styled.div`
   font-size: 12px;
-`;
+`
 
 const DragHandle = styled.div`
   width: 40px;
@@ -259,19 +259,19 @@ const DragHandle = styled.div`
   cursor: grab;
   user-select: none;
   touch-action: none; /* 모바일에서 수직 드래그 방해 최소화 */
-`;
+`
 
 const Today = styled.div`
   color: #808080;
   font-size: 12px;
   font-weight: 400;
-`;
+`
 
 export default function Calendar() {
-  const [value, setValue] = React.useState(new Date());
-  const [events, setEvents] = React.useState([]);
+  const [value, setValue] = React.useState(new Date())
+  const [events, setEvents] = React.useState([])
 
-  const toKey = (d) => format(d, 'yyyy-MM-dd');
+  const toKey = d => format(d, 'yyyy-MM-dd')
   //const todayKey = toKey(new Date());
 
   // 목데이터 (API 연결 전 임시)
@@ -289,86 +289,86 @@ export default function Calendar() {
         description: '졸업을 축하하는 공식 행사',
         date: '2025-08-27',
       },
-    ];
-    setEvents(mock);
-  }, []);
+    ]
+    setEvents(mock)
+  }, [])
 
   const eventsByDate = React.useMemo(() => {
-    const m = new Map();
+    const m = new Map()
     for (const e of events) {
-      const d = e.date || e.event_date || e.eventDate;
-      if (!d) continue;
-      const key = d.slice(0, 10); // 'yyyy-MM-dd'로 정규화
-      const arr = m.get(key) || [];
-      arr.push(e);
-      m.set(key, arr);
+      const d = e.date || e.event_date || e.eventDate
+      if (!d) continue
+      const key = d.slice(0, 10) // 'yyyy-MM-dd'로 정규화
+      const arr = m.get(key) || []
+      arr.push(e)
+      m.set(key, arr)
     }
-    return m;
-  }, [events]);
+    return m
+  }, [events])
 
   const eventDateSet = React.useMemo(
     () => new Set(eventsByDate.keys()),
     [eventsByDate]
-  );
+  )
 
-  const selectedKey = toKey(value);
-  const selectedEvents = eventsByDate.get(selectedKey) || [];
+  const selectedKey = toKey(value)
+  const selectedEvents = eventsByDate.get(selectedKey) || []
 
   const selectedLabel = useMemo(() => {
-    const base = format(value, 'M월 d일', { locale: ko });
-    return isToday(value) ? `${base} (오늘)` : base;
-  }, [value]);
+    const base = format(value, 'M월 d일', { locale: ko })
+    return isToday(value) ? `${base} (오늘)` : base
+  }, [value])
 
   // 바텀시트 높이
-  const SHEET_MIN = 150; // 접힘 높이
-  const SHEET_MAX = 520; // 펼침 높이(디자인에 맞게 조정)
-  const [sheetHeight, setSheetHeight] = useState(SHEET_MIN);
-  const dragRef = React.useRef({ y: 0, h: SHEET_MIN, dragging: false });
+  const SHEET_MIN = 150 // 접힘 높이
+  const SHEET_MAX = 520 // 펼침 높이(디자인에 맞게 조정)
+  const [sheetHeight, setSheetHeight] = useState(SHEET_MIN)
+  const dragRef = React.useRef({ y: 0, h: SHEET_MIN, dragging: false })
 
-  const onDragStart = (e) => {
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    dragRef.current = { y: clientY, h: sheetHeight, dragging: true };
+  const onDragStart = e => {
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    dragRef.current = { y: clientY, h: sheetHeight, dragging: true }
 
-    window.addEventListener('mousemove', onDragMove);
-    window.addEventListener('touchmove', onDragMove, { passive: false });
-    window.addEventListener('mouseup', onDragEnd);
-    window.addEventListener('touchend', onDragEnd);
-  };
+    window.addEventListener('mousemove', onDragMove)
+    window.addEventListener('touchmove', onDragMove, { passive: false })
+    window.addEventListener('mouseup', onDragEnd)
+    window.addEventListener('touchend', onDragEnd)
+  }
 
-  const onDragMove = (e) => {
-    if (!dragRef.current.dragging) return;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    const dy = dragRef.current.y - clientY; // 위로 올리면 + 값
-    let next = dragRef.current.h + dy;
-    if (next < SHEET_MIN) next = SHEET_MIN;
-    if (next > SHEET_MAX) next = SHEET_MAX;
-    setSheetHeight(next);
-    if (e.cancelable) e.preventDefault(); // 모바일 스크롤 방지
-  };
+  const onDragMove = e => {
+    if (!dragRef.current.dragging) return
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    const dy = dragRef.current.y - clientY // 위로 올리면 + 값
+    let next = dragRef.current.h + dy
+    if (next < SHEET_MIN) next = SHEET_MIN
+    if (next > SHEET_MAX) next = SHEET_MAX
+    setSheetHeight(next)
+    if (e.cancelable) e.preventDefault() // 모바일 스크롤 방지
+  }
 
   const onDragEnd = () => {
-    const threshold = SHEET_MIN + (SHEET_MAX - SHEET_MIN) / 2;
-    setSheetHeight((h) => (h >= threshold ? SHEET_MAX : SHEET_MIN));
-    dragRef.current.dragging = false;
+    const threshold = SHEET_MIN + (SHEET_MAX - SHEET_MIN) / 2
+    setSheetHeight(h => (h >= threshold ? SHEET_MAX : SHEET_MIN))
+    dragRef.current.dragging = false
 
-    window.removeEventListener('mousemove', onDragMove);
-    window.removeEventListener('touchmove', onDragMove);
-    window.removeEventListener('mouseup', onDragEnd);
-    window.removeEventListener('touchend', onDragEnd);
-  };
+    window.removeEventListener('mousemove', onDragMove)
+    window.removeEventListener('touchmove', onDragMove)
+    window.removeEventListener('mouseup', onDragEnd)
+    window.removeEventListener('touchend', onDragEnd)
+  }
 
   const monthEvents = useMemo(() => {
-    const y = value.getFullYear();
-    const m = value.getMonth();
-    return events.filter((e) => {
-      const raw = e.date || e.event_date || e.eventDate;
-      if (!raw) return false;
-      const d = new Date(raw);
-      return d.getFullYear() === y && d.getMonth() === m;
-    });
-  }, [events, value]);
+    const y = value.getFullYear()
+    const m = value.getMonth()
+    return events.filter(e => {
+      const raw = e.date || e.event_date || e.eventDate
+      if (!raw) return false
+      const d = new Date(raw)
+      return d.getFullYear() === y && d.getMonth() === m
+    })
+  }, [events, value])
 
-  const expanded = sheetHeight === SHEET_MAX;
+  const expanded = sheetHeight === SHEET_MAX
 
   return (
     <Container>
@@ -391,10 +391,10 @@ export default function Calendar() {
           next2Label={null}
           //  이벤트가 있는 날이면 점 표시
           tileContent={({ date, view }) => {
-            if (view !== 'month') return null;
+            if (view !== 'month') return null
             return eventDateSet.has(toKey(date)) ? (
               <div className="event-dot" />
-            ) : null;
+            ) : null
           }}
         />
       </CalendarWrap>
@@ -414,7 +414,9 @@ export default function Calendar() {
             : selectedLabel}
         </Today>
 
-        <div style={{ overflowY: 'auto', height: `calc(${sheetHeight}px - 60px)` }}>
+        <div
+          style={{ overflowY: 'auto', height: `calc(${sheetHeight}px - 60px)` }}
+        >
           {(expanded ? monthEvents : selectedEvents).length === 0 ? (
             <EventTitle
               style={{
@@ -427,7 +429,7 @@ export default function Calendar() {
               이 날짜에는 행사가 없습니다.
             </EventTitle>
           ) : (
-            (expanded ? monthEvents : selectedEvents).map((e) => (
+            (expanded ? monthEvents : selectedEvents).map(e => (
               <EventContainer key={e.event_id}>
                 <EventInfoContainer>
                   <EventIcon />
@@ -442,5 +444,5 @@ export default function Calendar() {
         </div>
       </EventListContainer>
     </Container>
-  );
+  )
 }
