@@ -28,7 +28,7 @@ export default function GroupBuy() {
           maxCount={6}
           storeName="멋사네 가게"
           deliveryDate="2025년 8월 16일 오전 10시"
-          onApply={() => alert('신청이 완료되었습니다.')}
+          onApply={() => navigate('/groupbuy/regi')}
         />
 
         <GroupList
@@ -39,7 +39,7 @@ export default function GroupBuy() {
           maxCount={6}
           storeName="멋사네 가게"
           deliveryDate="2025년 8월 16일 오전 10시"
-          onApply={() => alert('신청이 완료되었습니다.')}
+          onApply={() => navigate('/groupbuy/regi')}
         />
 
         <GroupList
@@ -50,7 +50,7 @@ export default function GroupBuy() {
           maxCount={6}
           storeName="멋사네 가게"
           deliveryDate="2025년 8월 16일 오전 10시"
-          onApply={() => alert('신청이 완료되었습니다.')}
+          onApply={() => navigate('/groupbuy/regi')}
         />
 
         <GroupList
@@ -61,7 +61,7 @@ export default function GroupBuy() {
           maxCount={6}
           storeName="멋사네 가게"
           deliveryDate="2025년 8월 16일 오전 10시"
-          onApply={() => alert('신청이 완료되었습니다.')}
+          onApply={() => navigate('/groupbuy/regi')}
         />
       </Container>
     </>
