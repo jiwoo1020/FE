@@ -78,7 +78,6 @@ const Container = styled.div`
   min-height: 100vh;
   height: auto;
   overflow-y: auto;
-  /* padding-bottom: 70px; */
 `
 
 const Row = styled.div`

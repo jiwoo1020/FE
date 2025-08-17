@@ -1,45 +1,19 @@
 import styled from '@emotion/styled'
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { BottomSheet } from './BottomSheet'
+import { BottomSheet } from '../components/product/BottomSheet'
+import MainHeader from '../components/nav/Header'
+
 const Container = styled.div`
   position: relative;
   width: 100%;
-  max-width: 430px;
-  height: 100vh;
+  min-height: 100vh;
+  max-width: 393px; /* 모바일 최대 폭 */
   margin: 0 auto;
-  overflow: hidden;
-  background: #fff;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-`
-const Page = styled.div`
-  display: flex;
-  justify-content: center; /* 가로 가운데 */
-  align-items: center; /* 세로 가운데 */
-  height: 100vh; /* 화면 전체 높이 */
-  background-color: #d9d9d9; /* 회색 배경 */
-`
-const PhoneFrame = styled.div`
-  width: 393px;
-  height: 852px;
-  background: #fff;
-`
-const Header = styled.div`
-  width: 393px;
-  height: 50px;
-  flex-shrink: 0;
-  border-bottom: 1px solid #000;
-  background: #1f3906;
-`
-const NavBottom = styled.div`
-  display: flex;
-  width: 440px;
-  padding: 16px 77px 0 76px;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 25px;
+  background: #ffffff;
+  min-height: 100vh;
+  height: auto;
+  overflow-y: auto;
 `
 const ContentBox = styled.div`
   display: flex;
@@ -53,7 +27,7 @@ const ContentBox = styled.div`
 const SearchFrame = styled.div`
   width: 393px;
   height: 82px;
-  flex-shrink: 0;S
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   margin-bottom: 30px;
@@ -76,7 +50,7 @@ const SearchBox = styled.div`
   width: 332px;
   height: 35px;
   padding-left: 16.5;
-  align items:center;
+  align-items: center;
   color: #000;
   font-family: Pretendard;
   font-size: 15px;
@@ -234,7 +208,7 @@ const TAGS = [
   '클라이밍',
   '슈럽',
 ]
-const CHIPS = ['인기순', '카테고리', '가격', '종류', '색상']
+const CHIPS = ['조회순', '카테고리', '가격', '종류', '색상']
 
 const MOCK = Array.from({ length: 9 }).map((_, i) => ({
   id: i + 1,
@@ -247,10 +221,6 @@ export default function ProductList() {
   const [open, setOpen] = useState(false)
   const [activeChip, setActiveChip] = useState(null)
 
-  const handleOpen = chip => {
-    setActiveChip(chip.trim())
-    setOpen(true)
-  }
   const handleClose = () => setOpen(false)
   const handleReset = () => {
     /* 선택값 초기화 */
@@ -265,83 +235,77 @@ export default function ProductList() {
 
   return (
     <Container>
-      ProductList 페이지
-      <Page>
-        <PhoneFrame>
-          <Header></Header>
-          <ContentBox>
-            <SearchFrame>
-              <SearchContainer>
-                <SearchBox>
-                  <text>장미</text>
-                </SearchBox>
-              </SearchContainer>
-              <TagList>
-                {TAGS.map(t => (
-                  <Tag key={t}>{t}</Tag>
-                ))}
-              </TagList>
-              <GrayLine></GrayLine>
-              <FilterList>
-                {CHIPS.map(c => (
-                  <FilterButton
-                    key={c}
-                    active={activeChip === c}
-                    onClick={() => {
-                      setActiveChip(c)
-                      setOpen(true)
-                    }}
-                  >
-                    {c} ▾
-                  </FilterButton>
-                ))}
-              </FilterList>
-              <BottomSheet
-                open={open}
-                title="필터"
-                onClose={handleClose}
-                onReset={handleReset}
-                onApply={handleApply}
+      <MainHeader />
+      <ContentBox>
+        <SearchFrame>
+          <SearchContainer>
+            <SearchBox>
+              <text>장미</text>
+            </SearchBox>
+          </SearchContainer>
+          <TagList>
+            {TAGS.map(t => (
+              <Tag key={t}>{t}</Tag>
+            ))}
+          </TagList>
+          <GrayLine></GrayLine>
+          <FilterList>
+            {CHIPS.map(c => (
+              <FilterButton
+                key={c}
+                active={activeChip === c}
+                onClick={() => {
+                  setActiveChip(c)
+                  setOpen(true)
+                }}
               >
-                {/* activeChip에 따라 내용 스위칭 */}
-                {activeChip === '인기순' && (
-                  <div style={{ padding: 8 }}>정렬 옵션들…</div>
-                )}
-                {activeChip === '카테고리' && (
-                  <div style={{ padding: 8 }}>카테고리 옵션들…</div>
-                )}
-                {activeChip === '가격' && (
-                  <div style={{ padding: 8 }}>가격 슬라이더…</div>
-                )}
-                {!['인기순', '카테고리', '가격'].includes(activeChip ?? '') && (
-                  <div style={{ padding: 8, color: '#888' }}>
-                    ‘{String(activeChip)}’ 패널을 추가하세요.
-                  </div>
-                )}
-              </BottomSheet>
-            </SearchFrame>
-            <ProductFrame>
-              <ProductContainer>
-                {filtered.map(p => (
-                  <ProductBox key={p.id}>
-                    <Group>
-                      <PictureBox />
-                      <ProductTextBox>
-                        <Price>{p.price.toLocaleString()}</Price>
-                        <TextLine>
-                          <Name>{p.name}</Name>
-                          <Store>{p.store}</Store>
-                        </TextLine>
-                      </ProductTextBox>
-                    </Group>
-                  </ProductBox>
-                ))}
-              </ProductContainer>
-            </ProductFrame>
-          </ContentBox>
-          <NavBottom></NavBottom>
-        </PhoneFrame>
-      </Page>
+                {c} ▾
+              </FilterButton>
+            ))}
+          </FilterList>
+          <BottomSheet
+            open={open}
+            title="필터"
+            onClose={handleClose}
+            onReset={handleReset}
+            onApply={handleApply}
+          >
+            {/* activeChip에 따라 내용 스위칭 */}
+            {activeChip === '인기순' && (
+              <div style={{ padding: 8 }}>정렬 옵션들…</div>
+            )}
+            {activeChip === '카테고리' && (
+              <div style={{ padding: 8 }}>카테고리 옵션들…</div>
+            )}
+            {activeChip === '가격' && (
+              <div style={{ padding: 8 }}>가격 슬라이더…</div>
+            )}
+            {!['인기순', '카테고리', '가격'].includes(activeChip ?? '') && (
+              <div style={{ padding: 8, color: '#888' }}>
+                ‘{String(activeChip)}’ 패널을 추가하세요.
+              </div>
+            )}
+          </BottomSheet>
+        </SearchFrame>
+        <ProductFrame>
+          <ProductContainer>
+            {filtered.map(p => (
+              <ProductBox key={p.id}>
+                <Group>
+                  <PictureBox />
+                  <ProductTextBox>
+                    <Price>{p.price.toLocaleString()}</Price>
+                    <TextLine>
+                      <Name>{p.name}</Name>
+                      <Store>{p.store}</Store>
+                    </TextLine>
+                  </ProductTextBox>
+                </Group>
+              </ProductBox>
+            ))}
+          </ProductContainer>
+        </ProductFrame>
+      </ContentBox>
     </Container>
   )
 }
