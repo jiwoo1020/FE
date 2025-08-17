@@ -357,7 +357,7 @@ export default function ProfileSell() {
                 }}
                 onClick={() => navigate('/groupbuy/regi')}
               >
-                상세정보 >
+                상세정보 &gt;
               </span>
               <MoveIcon />
             </GroupBuyHeader>
