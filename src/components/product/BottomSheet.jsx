@@ -81,7 +81,7 @@ const Close = styled.button`
 `
 
 const Body = styled.div`
-  padding: 12px 16px 88px; /* Footer 자리 확보 */
+  padding: 12px 16px; /* Footer 자리 확보 */
   overflow: auto;
   gap: 27px;
 `
@@ -89,7 +89,7 @@ const Body = styled.div`
 const Footer = styled.div`
   position: sticky;
   bottom: 0;
-  width: 100%;
+  width: 92%;
   background: #fff;
   display: flex;
   justify-content: center;
@@ -102,7 +102,7 @@ const Footer = styled.div`
     padding: 12px;
     border-radius: 10px;
     cursor: pointer;
-    width: 156px;
+    width: 140px;
   }
   .ghost {
     background: #f4f4f4;
@@ -136,7 +136,7 @@ const MenuContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 13px;
+  gap: 10px;
   align-self: stretch;
   margin-bottom: 27px;
 `
@@ -152,7 +152,7 @@ const Menuline = styled.div`
 `
 const MenuBox = styled.div`
   display: flex;
-  width: 176px;
+  width: 140px;
   height: 20px;
   padding: 7px 13px;
   flex-direction: row;
@@ -198,9 +198,9 @@ const PriceContainer = styled.div`
 `
 const PriceBox = styled.div`
   display: flex;
-  width: 156px;
+  width: 140px;
   height: 20px;
-  padding: 7px 13px;
+  padding: 7px;
   flex-direction: row;
   align-items: center;
   gap: 20px;
@@ -275,31 +275,21 @@ export function BottomSheet({
               <Menuline>
                 <MenuBox>
                   <Check></Check>
-                  <MenuText>인기순</MenuText>
+                  <MenuText>조회순</MenuText>
                 </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>추천순</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
                 <MenuBox>
                   <Check></Check>
                   <MenuText>최신순</MenuText>
                 </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>낮은 가격순</MenuText>
-                </MenuBox>
               </Menuline>
               <Menuline>
                 <MenuBox>
                   <Check></Check>
-                  <MenuText>높은 가격순</MenuText>
+                  <MenuText>낮은 가격순</MenuText>
                 </MenuBox>
                 <MenuBox>
                   <Check></Check>
-                  <MenuText>리뷰 많은순</MenuText>
+                  <MenuText>높은 가격순</MenuText>
                 </MenuBox>
               </Menuline>
             </MenuContainer>
