@@ -54,16 +54,19 @@ export default function BottomNav({ defaultActive, userType }) {
 }
 
 const Wrap = styled.nav`
-  position: relative;
-  width: 440px;
-  max-width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 393px;
+  margin: 0 auto;
+  right: 0;
   height: 85px;
-  min-height: auto;
   background: #ffffff;
   box-shadow: 0px -28px 17px rgba(0, 0, 0, 0.02),
     0px -13px 13px rgba(0, 0, 0, 0.03), 0px -3px 7px rgba(0, 0, 0, 0.03);
   border-radius: 30px 30px 0 0;
-  margin: 15px 0 0 0;
+  border-top: 1px solid #e5e5e5;
 `
 
 const Inner = styled.div`
