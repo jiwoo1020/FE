@@ -19,13 +19,9 @@ export default function Home() {
         onLoginClick={() => console.log('login')}
       />
       <MainBanner bgUrl={bannerImage} onClick={() => console.log('shop now')} />
-
       <Categories />
-
       <Shares />
-
       <TodayAnnouncement />
-
       <BottomNav />
     </Container>
   )
@@ -34,18 +30,12 @@ export default function Home() {
 const Container = styled.div`
   position: relative;
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   max-width: 393px; /* 모바일 최대 폭 */
-
   margin: 0 auto;
   background: #ffffff;
-  overflow: hidden;
-  padding-bottom: 90px;
-  /* 스크롤 가능하도록 */
   min-height: 100vh;
   height: auto;
-
-  /* 하단 네비게이션 공간 확보 */
-  padding-bottom: 2px;
-  /* margin-top: 2px; */
+  overflow-y: auto;
+  padding-bottom: 90px;
 `
