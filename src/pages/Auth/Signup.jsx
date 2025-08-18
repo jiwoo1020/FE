@@ -5,14 +5,15 @@ import Header from '../../components/Auth/Header'
 import TextField from '../../components/Auth/TextField'
 import RoleSelector from '../../components/Auth/RoleSelector'
 import logoPium from '../../assets/logo.svg'
+import axios from 'axios'
 
 export default function Signup() {
-  const [fullName, setFullName] = useState('')
-  const [userId, setUserId] = useState('')
+  const [userName, setUserName] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState('buyer') // 'seller' | 'buyer'
   const [bizNo, setBizNo] = useState('')
+  const [message, setMessage] = useState('')
   // 규칙
   const usernameRe = /^[a-z0-9_]{4,10}$/ // 아이디: 소문자/숫자/_ 4~10자
   const phoneRe = /^01[016789]\d{8}$/ // 010 + 8자리 (하이픈 없이)
@@ -21,17 +22,12 @@ export default function Signup() {
 
   const onSubmit = e => {
     e.preventDefault()
-    const name = fullName.trim()
-    const id = userId.trim().toLowerCase()
+    const name = userName.trim()
     const phoneDigits = phone.replace(/\D/g, '')
     const bizDigits = bizNo.replace(/\D/g, '')
 
     if (!name) return alert('이름을 입력해주세요.')
     if (name.length < 2) return alert('이름은 2자 이상 입력해주세요.')
-
-    if (!id) return alert('아이디를 입력해주세요.')
-    if (!usernameRe.test(id))
-      return alert('아이디는 영문 소문자/숫자/_ 4~10자입니다.')
 
     if (!phoneDigits) return alert('휴대폰 번호를 입력해주세요.')
     if (!phoneRe.test(phoneDigits))
@@ -42,20 +38,47 @@ export default function Signup() {
       return alert('비밀번호는 8자 이상, 영문/숫자/특수문자를 포함해야 합니다.')
     if (role === 'seller') {
       if (!bizNo) return alert('사업자 번호를 입력해주세요.')
-      if (bizRe.length !== 10) return alert('사업자 번호는 숫자 10자리입니다.')
+      if (bizDigits.length !== 10)
+        return alert('사업자 번호는 숫자 10자리입니다.')
     }
-    const payload = {
-      fullName: name,
-      userId: id,
-      phone: phoneDigits,
+    registeraxios({
+      username: name,
       password,
       role,
-      bizNo: role === 'seller' ? bizDigits : '',
-    }
-    console.log('signup payload:', payload)
-    alert('회원가입 요청')
+      phoneNumber: phoneDigits,
+      businessNumber: role === 'seller' ? bizDigits : '',
+    })
   }
 
+  const getCookie = name => {
+    const value = `; ${document.cookie}`
+    const parts = value.split(`;${name}=`)
+    if (parts.length === 2) return parts.pop().split(';').shift()
+  }
+
+  const registeraxios = payload => {
+    console.log('회원가입 요청 시작', payload)
+    const csrfToken = getCookie('csrftoken')
+    axios
+      .post(`${import.meta.env.VITE_API_URL}/api/user/signup`, payload, {
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+      })
+      .then(response => {
+        console.log(response)
+        alert('회원가입 성공')
+        if (response.status === 200) {
+          navigate('/login')
+        }
+      })
+      .catch(err => {
+        setMessage(err.response?.data?.message)
+        console.log(err)
+      })
+  }
   return (
     <Container>
       <BackgroundEllipses />
@@ -73,23 +96,13 @@ export default function Signup() {
           <TextField
             label="Full Name"
             placeholder="이OO"
-            value={fullName}
-            onChange={e => setFullName(e.target.value)}
+            value={userName}
+            onChange={e => setUserName(e.target.value)}
             minLength={2}
             maxLength={8}
             required
           />
-          <TextField
-            label="Id"
-            placeholder="sunny"
-            value={userId}
-            onChange={e => setUserId(e.target.value)}
-            minLength={4}
-            maxLength={10}
-            pattern={usernameRe.source}
-            title="영문 소문자/숫자/밑줄 4~10자"
-            required
-          />
+
           <TextField
             label="Phone Number"
             type="tel"

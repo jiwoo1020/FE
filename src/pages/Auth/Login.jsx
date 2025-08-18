@@ -7,12 +7,53 @@ import logoPium from '../../assets/logo.svg'
 import logoFlower from '../../assets/flowers.svg'
 
 export default function Login() {
-  const [id, setId] = useState('')
+  const [name, setName] = useState('')
   const [pw, setPw] = useState('')
 
   const onSubmit = e => {
     e.preventDefault()
-    console.log({ id, pw })
+    console.log({ name, pw })
+  }
+
+  const handleLoginClick = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            username: name,
+            password: pw,
+          }),
+        }
+      )
+
+      if (!response.ok) {
+        alert('로그인 실패: 이메일 또는 비밀번호를 확인하세요.')
+        console.log('입력 이름:', name)
+        console.log('입력 비밀번호:', pw)
+        return
+      }
+
+      const data = await response.json()
+      console.log('서버 응답:', data)
+
+      if (data.token) {
+        localStorage.setItem('token', data.token)
+        alert('로그인 성공~')
+        navigate('/')
+        console.log('입력 이름:', name)
+        console.log('입력 비밀번호:', pw)
+      } else {
+        alert('로그인 실패: 토큰이 없습니다.')
+      }
+    } catch (error) {
+      console.error('로그인 오류:', error)
+      alert('로그인 중 오류가 발생했습니다.')
+    }
   }
 
   return (
@@ -31,10 +72,10 @@ export default function Login() {
 
         <Form onSubmit={onSubmit}>
           <TextField
-            label="Id"
-            placeholder="yourId"
-            value={id}
-            onChange={e => setId(e.target.value)}
+            label="Name"
+            placeholder="yourName"
+            value={name}
+            onChange={e => setName(e.target.value)}
           />
           <TextField
             label="Password"
@@ -44,7 +85,7 @@ export default function Login() {
             value={pw}
             onChange={e => setPw(e.target.value)}
           />
-          <PrimaryButton type="submit">Log In</PrimaryButton>
+          <PrimaryButton onClick={handleLoginClick}>Log In</PrimaryButton>
         </Form>
 
         <SignupRow>
