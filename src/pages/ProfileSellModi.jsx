@@ -41,9 +41,10 @@ const RegisterButton = styled.div`
   color: #fff;
   margin: 0 auto;
   margin-top: 16px;
+  
 `
 
-export default function ProfileBuy() {
+export default function ProfileSellModi() {
   return (
     <Container>
       <MainHeader />
