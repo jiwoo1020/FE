@@ -19,6 +19,7 @@ const ProductRegisterText = lazy(() => import('./pages/ProductRegisterText'))
 const ProductRegisterImage = lazy(() => import('./pages/ProductRegisterImage'))
 const FreshnessResult = lazy(() => import('./pages/FreshnessResult'))
 const ProfileSell = lazy(() => import('./pages/ProfileSell'))
+const ProfileSellModi = lazy(() => import('./pages/ProfileSellModi'))
 const ProfileBuy = lazy(() => import('./pages/ProfileBuy'))
 
 function App() {
@@ -60,6 +61,8 @@ function App() {
             <Route path="/product/manage" element={<ProductManage />} />
             {/* 프로필-판매자 */}
             <Route path="/profile/sell" element={<ProfileSell />} />
+            {/* 프로필-판매자-수정 */}
+            <Route path="/profile/sell/modi" element={<ProfileSellModi />} />
             {/* 프로필-구매자 */}
             <Route path="/profile/buy" element={<ProfileBuy />} />
             {/* 상품등록-텍스트 */}

@@ -373,7 +373,9 @@ export default function ProfileSell() {
           </GroupBuyItem>
         </GroupBuyContainer>
         <Line2 />
-        <FixInfo>내 정보 수정하기</FixInfo>
+        <FixInfo onClick={() => navigate('/profile/sell/modi')}>
+          내 정보 수정하기
+        </FixInfo>
       </MainContainer>
     </Container>
   )
