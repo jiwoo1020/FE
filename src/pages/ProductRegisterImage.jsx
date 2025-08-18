@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import styled from '@emotion/styled'
 import { FaArrowLeftLong } from 'react-icons/fa6'
 import MainHeader from '../components/nav/Header'
+import FreshnessLoadingModal from '../components/modal/FreshnessLoadingModal'
+import FreshnessResultModal from '../components/modal/FreshnessResultModal'
 
 const Container = styled.div`
   position: relative;
@@ -57,7 +59,19 @@ const NextButton = styled.div`
 `
 
 export default function ProductRegisterImage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+
+  const handleNextClick = async () => {
+    setIsLoading(true)
+  
+    // 가짜 로딩 시뮬레이션
+    await new Promise(res => setTimeout(res, 3000)) // 실제 API로 대체
+  
+    setIsLoading(false)
+    setShowResultModal(true)
+  }
 
   return (
     <Container>
@@ -93,10 +107,19 @@ export default function ProductRegisterImage() {
         </p>
         <CameraContainer />
         <CameraButton />
-        <NextButton onClick={() => navigate('/freshness')}>
+        <NextButton onClick={handleNextClick}>
           다음 단계
         </NextButton>
       </MainContainer>
+
+       {/* 모달들 조건부 렌더링 */}
+       {isLoading && <FreshnessLoadingModal />}
+      {showResultModal && (
+        <FreshnessResultModal
+          grade="매우 신선"
+          onNext={() => navigate('/freshness')}
+        />
+      )}
     </Container>
   )
 }
