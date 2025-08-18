@@ -207,7 +207,6 @@ export default function ProductRegisterText() {
               fontSize: '12px',
               color: '#808080',
               marginTop: '5px',
-              marginLeft: 'auto',
               marginRight: '40px',
             }}
           >
