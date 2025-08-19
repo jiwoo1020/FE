@@ -11,7 +11,7 @@ export default function Signup() {
   const [userName, setUserName] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('buyer') // 'seller' | 'buyer'
+  const [role, setRole] = useState('consumer') // 'seller' | 'consumer'
   const [bizNo, setBizNo] = useState('')
   const [message, setMessage] = useState('')
   // 규칙
@@ -27,7 +27,7 @@ export default function Signup() {
     const bizDigits = bizNo.replace(/\D/g, '')
 
     if (!name) return alert('이름을 입력해주세요.')
-    if (name.length < 2) return alert('이름은 2자 이상 입력해주세요.')
+    if (name.length < 4) return alert('이름은 4자 이상 입력해주세요.')
 
     if (!phoneDigits) return alert('휴대폰 번호를 입력해주세요.')
     if (!phoneRe.test(phoneDigits))
@@ -50,33 +50,31 @@ export default function Signup() {
     })
   }
 
-  const getCookie = name => {
-    const value = `; ${document.cookie}`
-    const parts = value.split(`;${name}=`)
-    if (parts.length === 2) return parts.pop().split(';').shift()
-  }
-
   const registeraxios = payload => {
     console.log('회원가입 요청 시작', payload)
-    const csrfToken = getCookie('csrftoken')
     axios
       .post(`${import.meta.env.VITE_API_URL}/api/user/signup`, payload, {
         headers: {
-          'X-CSRFToken': csrfToken,
           'Content-Type': 'application/json',
         },
-        withCredentials: true,
       })
       .then(response => {
         console.log(response)
-        alert('회원가입 성공')
-        if (response.status === 200) {
-          navigate('/login')
+        if (response.status === 200 || response.status === 201) {
+          alert('회원가입 성공')
+          // 회원가입 후 바로 로그인 토큰을 발급해주는 경우
+          if (response.data.token) {
+            localStorage.setItem('token', response.data.token)
+            navigate('/')
+          } else {
+            navigate('/login')
+          }
         }
       })
       .catch(err => {
         setMessage(err.response?.data?.message)
         console.log(err)
+        console.log(err.response.data)
       })
   }
   return (
@@ -94,8 +92,8 @@ export default function Signup() {
 
         <Form onSubmit={onSubmit}>
           <TextField
-            label="Full Name"
-            placeholder="이OO"
+            label="Nickname"
+            placeholder="소문자, 숫자 포함 4자리 이상"
             value={userName}
             onChange={e => setUserName(e.target.value)}
             minLength={2}
@@ -117,7 +115,7 @@ export default function Signup() {
             label="Set Password"
             type="password"
             toggle
-            placeholder="********"
+            placeholder="8자 이상, 영문/숫자/특수문자 포함"
             value={password}
             onChange={e => setPassword(e.target.value)}
             minLength={8}

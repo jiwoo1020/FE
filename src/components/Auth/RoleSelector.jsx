@@ -25,21 +25,21 @@ export default function RoleSelector({ value, onChange }) {
 
       <Option
         onClick={() => {
-          console.log('role -> buyer')
-          onChange('buyer')
+          console.log('role -> consumer')
+          onChange('coustomer')
         }}
       >
         <HiddenRadio
           type="radio"
           name="role"
-          value="buyer"
-          checked={value === 'buyer'}
+          value="consumer"
+          checked={value === 'consumer'}
           onChange={e => {
             console.log('role ->', e.target.value)
             onChange(e.target.value)
           }}
         />
-        <Dot checked={value === 'buyer'} />
+        <Dot checked={value === 'consumer'} />
         <LabelText>구매자</LabelText>
       </Option>
     </Wrap>

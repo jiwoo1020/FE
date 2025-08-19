@@ -5,48 +5,36 @@ import Header from '@/components/Auth/Header'
 import TextField from '@/components/Auth/TextField'
 import logoPium from '../../assets/logo.svg'
 import logoFlower from '../../assets/flowers.svg'
+import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
   const [name, setName] = useState('')
   const [pw, setPw] = useState('')
-
-  const onSubmit = e => {
-    e.preventDefault()
-    console.log({ name, pw })
-  }
-
-  const handleLoginClick = async () => {
+  const navigate = useNavigate()
+  const handleLoginClick = async e => {
+    e.preventDefault() // form submit 막기
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/auth/login`,
         {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: name,
-            password: pw,
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: name, password: pw }),
         }
       )
 
       if (!response.ok) {
-        alert('로그인 실패: 이메일 또는 비밀번호를 확인하세요.')
-        console.log('입력 이름:', name)
-        console.log('입력 비밀번호:', pw)
+        alert('로그인 실패: 아이디 또는 비밀번호를 확인하세요.')
         return
       }
 
       const data = await response.json()
       console.log('서버 응답:', data)
 
-      if (data.token) {
-        localStorage.setItem('token', data.token)
-        alert('로그인 성공~')
+      if (data.data.accessToken) {
+        localStorage.setItem('token', data.data.accessToken) // 토큰 저장
+        alert('로그인 성공!')
         navigate('/')
-        console.log('입력 이름:', name)
-        console.log('입력 비밀번호:', pw)
       } else {
         alert('로그인 실패: 토큰이 없습니다.')
       }
@@ -70,10 +58,10 @@ export default function Login() {
           <SubTitle>Enter your id and password to log in</SubTitle>
         </TextWrap>
 
-        <Form onSubmit={onSubmit}>
+        <Form onSubmit={handleLoginClick}>
           <TextField
-            label="Name"
-            placeholder="yourName"
+            label="Id"
+            placeholder="아이디를 작성해주세요."
             value={name}
             onChange={e => setName(e.target.value)}
           />
@@ -81,11 +69,11 @@ export default function Login() {
             label="Password"
             type="password"
             toggle //눈 아이콘 활성화
-            placeholder="yourPassword"
+            placeholder="비밀번호를 작성해주세요."
             value={pw}
             onChange={e => setPw(e.target.value)}
           />
-          <PrimaryButton onClick={handleLoginClick}>Log In</PrimaryButton>
+          <PrimaryButton type="submit">Log In</PrimaryButton>
         </Form>
 
         <SignupRow>
