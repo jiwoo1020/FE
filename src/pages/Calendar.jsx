@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from '@emotion/styled'
 import { FaArrowLeftLong } from 'react-icons/fa6'
 import { IoSearchOutline } from 'react-icons/io5'
@@ -6,17 +6,17 @@ import MonthCalendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import { format, isToday } from 'date-fns'
 import { ko } from 'date-fns/locale'
+import axios from 'axios'
 
 const Container = styled.div`
   position: relative;
   width: 100%;
-  max-width: 430px;
-  height: 100vh;
+  min-height: 100vh;
+  max-width: 393px;
   margin: 0 auto;
-  overflow: hidden;
-  background: #fff;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  background: #ffffff;
+  overflow-y: auto;
+  padding-bottom: 90px;
 `
 
 const Header = styled.div`
@@ -24,12 +24,10 @@ const Header = styled.div`
   width: 100%;
   height: 50px;
   background: #1f3906;
-  display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 306px;
-  box-sizing: border-box;
 `
 
 const BackButton = styled(FaArrowLeftLong)`
@@ -47,7 +45,6 @@ const SearchButton = styled(IoSearchOutline)`
 
 const Title = styled.h1`
   color: #000;
-  //font-family: Pretendard;
   font-size: 24px;
   font-weight: 200;
   letter-spacing: -0.96px;
@@ -194,14 +191,15 @@ const CalendarWrap = styled.div`
   }
 `
 
+
+
 const EventListContainer = styled.div`
   position: fixed;
-  box-sizing: border-box;
   left: 50%;
   bottom: 0;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 430px;
+  max-width: 393px;
   background: #fff;
   border-radius: 30px 30px 0 0;
   border-top: 1px solid #1f3906;
@@ -209,22 +207,23 @@ const EventListContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
-  overflow: hidden; /* 내부 스크롤 영역으로 넘김 */
-`
+
+  box-sizing: border-box;   /* 패딩 포함 크기 계산 */
+  word-break: break-word;   /* 텍스트 넘치지 않게 줄바꿈 */
+  white-space: normal;      /* 줄바꿈 허용 */
+`;
 
 const EventContainer = styled.div`
   display: flex;
   flex-direction: column;
-  width: 357px;
-  height: 84px;
   gap: 18px;
+  margin-top: 10px;
 `
 
 const EventInfoContainer = styled.div`
   display: flex;
   flex-direction: row;
   gap: 9px;
-  margin-top: 20px;
 `
 
 const EventIcon = styled.div`
@@ -248,6 +247,7 @@ const EventTitle = styled.div`
 
 const EventDescription = styled.div`
   font-size: 12px;
+  color: #333;
 `
 
 const DragHandle = styled.div`
@@ -258,7 +258,6 @@ const DragHandle = styled.div`
   margin: 0 auto 4px;
   cursor: grab;
   user-select: none;
-  touch-action: none; /* 모바일에서 수직 드래그 방해 최소화 */
 `
 
 const Today = styled.div`
@@ -268,37 +267,75 @@ const Today = styled.div`
 `
 
 export default function Calendar() {
-  const [value, setValue] = React.useState(new Date())
-  const [events, setEvents] = React.useState([])
+  const [value, setValue] = useState(new Date())
+  const [activeStartDate, setActiveStartDate] = useState(new Date())
+  const [events, setEvents] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
+  const cacheRef = useRef(new Map())
   const toKey = d => format(d, 'yyyy-MM-dd')
-  //const todayKey = toKey(new Date());
+  const monthKey = format(activeStartDate, 'yyyy-MM')
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Seoul'
 
-  // 목데이터 (API 연결 전 임시)
-  React.useEffect(() => {
-    const mock = [
-      {
-        event_id: 501,
-        title: '장미데이',
-        description: '연인들이 서로에 대한 사랑의 표현으로 장미를 주고받는 날',
-        date: '2025-08-20',
-      },
-      {
-        event_id: 502,
-        title: '한국외대 졸업식',
-        description: '졸업을 축하하는 공식 행사',
-        date: '2025-08-27',
-      },
-    ]
-    setEvents(mock)
-  }, [])
+  async function loadMonthEvents() {
+    setLoading(true)
+    setError(null)
+    try {
+      const url = `${import.meta.env.VITE_API_URL}api/events/month?month=${encodeURIComponent(
+        monthKey
+      )}`
+      console.log('요청 URL:', url)
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        credentials: 'omit',
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      console.log('불러오기 성공:', data)
+      const flat = (data?.days ?? []).flatMap(day => {
+        const date = day?.date?.slice(0, 10)
+        return (day?.items ?? []).map(it => ({
+          event_id: it.eventId,
+          title: it.title,
+          description: it.description,
+          date,
+          startAt: it.startAt,
+          endAt: it.endAt,
+          categoryName: it.categoryName,
+          iconEmoji: it.iconEmoji,
+          iconImageUrl: it.iconImageUrl,
+        }))
+      })
+      cacheRef.current.set(monthKey, flat)
+      setEvents(flat)
+    } catch (e) {
+      setError(e?.message || '이벤트 로드 실패')
+      setEvents([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const eventsByDate = React.useMemo(() => {
+  useEffect(() => {
+    const cached = cacheRef.current.get(monthKey)
+    if (cached) {
+      setEvents(cached)
+      return
+    }
+    loadMonthEvents()
+  }, [monthKey])
+
+  const eventsByDate = useMemo(() => {
     const m = new Map()
     for (const e of events) {
-      const d = e.date || e.event_date || e.eventDate
-      if (!d) continue
-      const key = d.slice(0, 10) // 'yyyy-MM-dd'로 정규화
+      const key = e.date?.slice(0, 10)
+      if (!key) continue
       const arr = m.get(key) || []
       arr.push(e)
       m.set(key, arr)
@@ -306,11 +343,7 @@ export default function Calendar() {
     return m
   }, [events])
 
-  const eventDateSet = React.useMemo(
-    () => new Set(eventsByDate.keys()),
-    [eventsByDate]
-  )
-
+  const eventDateSet = useMemo(() => new Set(eventsByDate.keys()), [eventsByDate])
   const selectedKey = toKey(value)
   const selectedEvents = eventsByDate.get(selectedKey) || []
 
@@ -319,16 +352,14 @@ export default function Calendar() {
     return isToday(value) ? `${base} (오늘)` : base
   }, [value])
 
-  // 바텀시트 높이
-  const SHEET_MIN = 150 // 접힘 높이
-  const SHEET_MAX = 520 // 펼침 높이(디자인에 맞게 조정)
+  const SHEET_MIN = 150
+  const SHEET_MAX = 520
   const [sheetHeight, setSheetHeight] = useState(SHEET_MIN)
-  const dragRef = React.useRef({ y: 0, h: SHEET_MIN, dragging: false })
+  const dragRef = useRef({ y: 0, h: SHEET_MIN, dragging: false })
 
   const onDragStart = e => {
     const clientY = e.touches ? e.touches[0].clientY : e.clientY
     dragRef.current = { y: clientY, h: sheetHeight, dragging: true }
-
     window.addEventListener('mousemove', onDragMove)
     window.addEventListener('touchmove', onDragMove, { passive: false })
     window.addEventListener('mouseup', onDragEnd)
@@ -338,35 +369,28 @@ export default function Calendar() {
   const onDragMove = e => {
     if (!dragRef.current.dragging) return
     const clientY = e.touches ? e.touches[0].clientY : e.clientY
-    const dy = dragRef.current.y - clientY // 위로 올리면 + 값
+    const dy = dragRef.current.y - clientY
     let next = dragRef.current.h + dy
     if (next < SHEET_MIN) next = SHEET_MIN
     if (next > SHEET_MAX) next = SHEET_MAX
     setSheetHeight(next)
-    if (e.cancelable) e.preventDefault() // 모바일 스크롤 방지
+    if (e.cancelable) e.preventDefault()
   }
 
   const onDragEnd = () => {
     const threshold = SHEET_MIN + (SHEET_MAX - SHEET_MIN) / 2
     setSheetHeight(h => (h >= threshold ? SHEET_MAX : SHEET_MIN))
     dragRef.current.dragging = false
-
     window.removeEventListener('mousemove', onDragMove)
     window.removeEventListener('touchmove', onDragMove)
     window.removeEventListener('mouseup', onDragEnd)
     window.removeEventListener('touchend', onDragEnd)
   }
 
-  const monthEvents = useMemo(() => {
-    const y = value.getFullYear()
-    const m = value.getMonth()
-    return events.filter(e => {
-      const raw = e.date || e.event_date || e.eventDate
-      if (!raw) return false
-      const d = new Date(raw)
-      return d.getFullYear() === y && d.getMonth() === m
-    })
-  }, [events, value])
+  const monthEvents = useMemo(
+    () => events.filter(e => (e.date || '').startsWith(monthKey)),
+    [events, monthKey]
+  )
 
   const expanded = sheetHeight === SHEET_MAX
 
@@ -376,29 +400,26 @@ export default function Calendar() {
         <BackButton />
         <SearchButton />
       </Header>
-
       <Title>이번 달의 용인 행사</Title>
-
       <CalendarWrap>
         <MonthCalendar
           onChange={setValue}
           value={value}
           locale="ko-KR"
           calendarType="gregory"
-          formatDay={(locale, date) => date.getDate()} // ← '일' 제거
-          // 월 전후 이동은 네비게이션 기본 제공 (상단 화살표)
+          formatDay={(locale, date) => date.getDate()}
           prev2Label={null}
           next2Label={null}
-          //  이벤트가 있는 날이면 점 표시
-          tileContent={({ date, view }) => {
-            if (view !== 'month') return null
-            return eventDateSet.has(toKey(date)) ? (
+          onActiveStartDateChange={({ activeStartDate }) =>
+            setActiveStartDate(activeStartDate)
+          }
+          tileContent={({ date, view }) =>
+            view === 'month' && eventDateSet.has(toKey(date)) ? (
               <div className="event-dot" />
             ) : null
-          }}
+          }
         />
       </CalendarWrap>
-
       <EventListContainer
         style={{
           height: sheetHeight,
@@ -408,29 +429,35 @@ export default function Calendar() {
         <DragHandle onMouseDown={onDragStart} onTouchStart={onDragStart} />
         <Today>
           {expanded
-            ? `${format(value, 'M월 전체 일정', { locale: ko })} (${
-                monthEvents.length
-              }건)`
+            ? `${format(value, 'M월 전체 일정', { locale: ko })} (${monthEvents.length}건)`
             : selectedLabel}
         </Today>
-
-        <div
-          style={{ overflowY: 'auto', height: `calc(${sheetHeight}px - 60px)` }}
-        >
-          {(expanded ? monthEvents : selectedEvents).length === 0 ? (
+        <div style={{ overflowY: 'auto', height: `calc(${sheetHeight}px - 60px)` }}>
+          {loading && (
             <EventTitle
-              style={{
-                color: '#808080',
-                fontSize: '14px',
-                fontWeight: 300,
-                marginTop: '20px',
-              }}
+              style={{ color: '#808080', fontSize: '14px', marginTop: '20px' }}
+            >
+              불러오는 중…
+            </EventTitle>
+          )}
+          {error && (
+            <EventTitle
+              style={{ color: 'crimson', fontSize: '14px', marginTop: '20px' }}
+            >
+              {error}
+            </EventTitle>
+          )}
+          {!loading && !error && (expanded ? monthEvents : selectedEvents).length === 0 && (
+            <EventTitle
+              style={{ color: '#808080', fontSize: '14px', marginTop: '20px' }}
             >
               이 날짜에는 행사가 없습니다.
             </EventTitle>
-          ) : (
+          )}
+          {!loading &&
+            !error &&
             (expanded ? monthEvents : selectedEvents).map(e => (
-              <EventContainer key={e.event_id}>
+              <EventContainer key={`${e.startAt}-${e.title}`}>
                 <EventInfoContainer>
                   <EventIcon />
                   <EventInfo>
@@ -439,8 +466,7 @@ export default function Calendar() {
                   </EventInfo>
                 </EventInfoContainer>
               </EventContainer>
-            ))
-          )}
+            ))}
         </div>
       </EventListContainer>
     </Container>
