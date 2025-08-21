@@ -282,7 +282,7 @@ export default function Calendar() {
     setLoading(true)
     setError(null)
     try {
-      const url = `${import.meta.env.VITE_API_URL}api/events/month?month=${encodeURIComponent(
+      const url = `${import.meta.env.VITE_API_URL}/api/events/month?month=${encodeURIComponent(
         monthKey
       )}`
       console.log('요청 URL:', url)
