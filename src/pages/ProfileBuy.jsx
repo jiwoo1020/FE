@@ -5,6 +5,8 @@ import { FaAngleRight } from 'react-icons/fa6'
 import Flower from '../assets/peony.svg'
 import UserInformationItem from '../components/profile/UserInformationItem'
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 
 const Container = styled.div`
   position: relative;
@@ -161,6 +163,51 @@ const Delivery = styled.div`
 export default function ProfileBuy() {
 
   const navigate = useNavigate()
+
+  const [userData, setUserData] = useState(null)
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const rawToken = localStorage.getItem('token');
+        if (!rawToken) {
+          console.warn("🔑 토큰이 없습니다.");
+          return;
+        }
+  
+        const token = rawToken.startsWith('Bearer') ? rawToken : `Bearer ${rawToken}`;
+        console.log("📦 최종 Authorization 헤더:", token);
+        console.log("🌐 API URL:", import.meta.env.VITE_API_URL);
+  
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/me`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': token,
+          },
+          // credentials: 'omit', // 대부분 불필요하므로 지움
+        });
+  
+        if (!res.ok) {
+          console.error("❌ 응답 실패:", res.status, res.statusText);
+          throw new Error('응답 실패');
+        }
+  
+        const data = await res.json();
+        console.log('✅ 유저 정보 불러오기 성공:', data);
+        setUserData(data.data);
+      } catch (err) {
+        console.error('❌ 유저 정보 불러오기 실패', err);
+      }
+    };
+  
+    fetchUserData();
+  }, []);
+  
+  
+  
+  
   
 
     const mockGroupBuys = [
@@ -190,7 +237,7 @@ export default function ProfileBuy() {
     <Container>
       <MainHeader />
       <MainContainer>
-      <Title>반갑습니다, 머쨍이님</Title>
+      <Title>반갑습니다, {userData?.username ?? '머쨍이'}님</Title>
       <p
             style={{
               color: '#000',
@@ -203,7 +250,11 @@ export default function ProfileBuy() {
           >
             나의 정보
           </p>
-      <UserInformationItem style ={{ marginTop: '-20px'}}/>
+      <UserInformationItem style ={{ marginTop: '-20px'}}
+      
+      id={userData?.username}
+      phone={userData?.phoneNumber}
+      />
       <MyGroupBuyList>나의 공동구매 현황</MyGroupBuyList>
       <GroupBuyContainer>
         {mockGroupBuys.map((item) => (

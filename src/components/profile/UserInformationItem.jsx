@@ -44,10 +44,10 @@ export default function UserInformationItem({
 }) {
   return (
     <InfoContainer>
-      <InfoField>
+      {/*<InfoField>
         <Label>이름</Label>
         <InfoValue>{name}</InfoValue>
-      </InfoField>
+      </InfoField> */}
       <InfoField>
         <Label>아이디</Label>
         <InfoValue>{id}</InfoValue>
