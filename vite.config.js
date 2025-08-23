@@ -40,7 +40,7 @@ export default defineConfig({
     }),
   ],
   server: {
-    https: true,
+    https: false,
     proxy: {
       '/api': {
         target: 'http://3.106.186.230:8081', // 백엔드 HTTP
