@@ -86,19 +86,24 @@ export default function ProductRegisterImage() {
   const API_UPLOAD_URL = `${import.meta.env.VITE_API_URL}/api/seller/product/${productId}/images?${qs}`
 
   async function uploadPlantPhoto(file, { endpoint, token }) {
-    const formData = new FormData()
-    formData.append('file', file)  
+    const safeFile =
+      file instanceof File
+        ? file
+        : new File([file], "photo.jpg", { type: "image/jpeg" })
   
-    // 확인용 로그
+    const formData = new FormData()
+    formData.append("file", safeFile, safeFile.name) // 세 번째 인자로 파일명 강제
+  
+    // 디버깅 로그
     for (let [key, val] of formData.entries()) {
-      console.log(`FormData: ${key} →`, val)
+      console.log(`FormData key=${key}, name=${val.name}, type=${val.type}`)
     }
   
     const res = await fetch(endpoint, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        Accept: 'application/json',
-        Authorization: token.startsWith('Bearer') ? token : `Bearer ${token}`,
+        Accept: "application/json",
+        Authorization: token.startsWith("Bearer") ? token : `Bearer ${token}`,
       },
       body: formData,
     })
@@ -111,6 +116,7 @@ export default function ProductRegisterImage() {
   
     return json
   }
+  
   
 
 
@@ -154,17 +160,21 @@ export default function ProductRegisterImage() {
       canvas.height = Math.round(targetW * ratio)
       const ctx = canvas.getContext('2d', { willReadFrequently: true })
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-
+  
       const blob = await new Promise(resolve =>
-        canvas.toBlob(resolve, 'image/jpeg', 0.9)
+        canvas.toBlob(resolve, 'image/jpeg', 0.9) // JPEG으로 추출
       )
       if (!blob) {
         alert('이미지 캡처 실패')
         return
       }
-      setCapturedBlob(blob)
-      setPreviewURL(URL.createObjectURL(blob))
-
+  
+      // 👇 File 객체로 변환 (확장자/타입 지정)
+      const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' })
+  
+      setCapturedBlob(file)
+      setPreviewURL(URL.createObjectURL(file))
+  
       // 발열/배터리 고려해 정지(계속 미리보기 유지하려면 주석 처리)
       streamRef.current?.getTracks().forEach(t => t.stop())
     } else {
@@ -172,6 +182,7 @@ export default function ProductRegisterImage() {
       fileInputRef.current?.click()
     }
   }
+  
 
     /* 파일 인풋 폴백 */
     const onFileChange = (e) => {
