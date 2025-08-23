@@ -14,17 +14,19 @@ export default function Login() {
   const handleLoginClick = async e => {
     e.preventDefault() // form submit 막기
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/auth/login`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: name, password: pw }),
-        }
-      )
-
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json', // Swagger 맞추기
+        },
+        body: JSON.stringify({ username: name, password: pw }),
+        // body: JSON.stringify({ username: 'ss1234', password: '1234qwer!' }),
+        credentials: 'include',
+      })
       if (!response.ok) {
         alert('로그인 실패: 아이디 또는 비밀번호를 확인하세요.')
+        console.error('로그인 실패 응답:', response.status, response.statusText)
         return
       }
 
