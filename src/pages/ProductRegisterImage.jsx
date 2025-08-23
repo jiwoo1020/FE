@@ -3,8 +3,9 @@ import { FaArrowLeftLong } from 'react-icons/fa6'
 import MainHeader from '../components/nav/Header'
 import FreshnessLoadingModal from '../components/modal/FreshnessLoadingModal'
 import FreshnessResultModal from '../components/modal/FreshnessResultModal'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import React, { useEffect, useState, useRef } from 'react'
+import { useLocation } from "react-router-dom"
 
 const Container = styled.div`
   position: relative;
@@ -68,8 +69,6 @@ const CameraWraaper = styled.div`
 
 export default function ProductRegisterImage() {
   const navigate = useNavigate()
-  const { productId: productIdParam } = useParams()
-  const productId = productIdParam ?? 201 // 라우트에서 못 받으면 임시 값
 
   const videoRef = useRef(null)
   const fileInputRef = useRef(null)
@@ -81,6 +80,9 @@ export default function ProductRegisterImage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showResultModal, setShowResultModal] = useState(false)
   const [resultLabel, setResultLabel] = useState('')
+
+  const location = useLocation()
+  const productId = location.state?.productId
 
   const qs = new URLSearchParams({ is_main: 'true', run_ai: 'true' }).toString()
   const API_UPLOAD_URL = `${import.meta.env.VITE_API_URL}/api/seller/product/${productId}/images?${qs}`
