@@ -35,7 +35,7 @@ const RegisterTextBox = styled.div`
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
   padding: 24px 0 0 20px;
   gap: 25px;
-  margin-bottom: 200px;
+  margin-bottom: 250px;
 `
 const Species = styled.div`
   gap: 19px;
