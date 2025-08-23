@@ -1,11 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import mkcert from 'vite-plugin-mkcert'
 import path from 'path'
 export default defineConfig({
   plugins: [
     react(),
-
+    mkcert(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico'],
@@ -38,6 +39,16 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    https: true,
+    proxy: {
+      '/api': {
+        target: 'http://3.106.186.230:8081', // 백엔드 HTTP
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
