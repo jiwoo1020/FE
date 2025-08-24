@@ -102,7 +102,7 @@ const Circle = styled('input')`
   height: 15px;
   border: 1px solid #d9d9d9;
   border-radius: 100px;
-  cursur: pointer;
+  cursor: pointer;
 `
 const Five = styled.div`
   color: #000;
@@ -179,7 +179,7 @@ const PutText = styled.div`
   font-style: normal;
   font-weight: 300;
   line-height: normal;
-  paddig-right: 3px;
+  padding-right: 3px;
   justify-content: right;
 `
 const PurchaseButton = styled.div`

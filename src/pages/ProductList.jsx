@@ -1,9 +1,12 @@
 import styled from '@emotion/styled'
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { BottomSheet } from '../components/product/BottomSheet'
+// ProductList.jsx
+import BottomSheet from '../components/product/BottomSheet'
 import MainHeader from '../components/nav/Header'
+import Search from '../assets/search.svg'
 import { useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 const Container = styled.div`
   position: relative;
   width: 100%;
@@ -210,18 +213,14 @@ const TAGS = [
 ]
 const CHIPS = ['조회순', '카테고리', '가격', '종류', '색상']
 
-const MOCK = Array.from({ length: 9 }).map((_, i) => ({
-  id: i + 1,
-  price: 20000,
-  name: '장미',
-  store: '멋사네 가게',
-}))
-
 export default function ProductList() {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [activeChip, setActiveChip] = useState(null)
-
+  const [list, setList] = useState([]) // 상품 목록 상태
+  const [loading, setLoading] = useState(true)
+  const [products, setProducts] = useState([])
+  const [error, setError] = useState(null)
   const handleClose = () => setOpen(false)
   const handleReset = () => {
     /* 선택값 초기화 */
@@ -232,10 +231,67 @@ export default function ProductList() {
     category: null,
     price: [10000, 50000],
   })
-  const filtered = useMemo(() => MOCK, [selected])
+  const filtered = useMemo(() => {
+    return products.filter(p => {
+      // 가격 필터
+      if (selected.price) {
+        if (p.price < selected.price[0] || p.price > selected.price[1]) {
+          return false
+        }
+      }
+      // 카테고리 필터
+      if (selected.category && p.category?.id !== selected.category) {
+        return false
+      }
+      return true
+    })
+  }, [products, selected])
   const ProductHandleClick = id => {
     navigate(`/product/${id}`)
   }
+  useEffect(() => {
+    const fetchProductList = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_API_URL
+          }/api/product?q=장미&category_id=21&type=rose&price_min=10000`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+
+        console.log('HTTP Status:', res.status)
+
+        if (!res.ok) {
+          const errorData = await res.json()
+          setError(errorData)
+          console.error('상품 목록 조회 실패:', errorData)
+          return
+        }
+
+        const resData = await res.json()
+        console.log('상품 목록 응답:', resData)
+
+        // ✅ DB 상품 목록 반영
+        setProducts(resData.content || [])
+        console.log('상품 목록 응답:', resData)
+      } catch (err) {
+        console.error('네트워크 오류:', err)
+        setError(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProductList()
+  }, [])
 
   return (
     <Container>
@@ -244,8 +300,24 @@ export default function ProductList() {
         <SearchFrame>
           <SearchContainer>
             <SearchBox>
-              <text>장미</text>
+              <input
+                type="text"
+                placeholder="검색어를 입력하세요"
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  flex: 1,
+                  fontSize: '14px',
+                  marginLeft: '10px',
+                }}
+              />
             </SearchBox>
+            <img
+              src={Search}
+              alt="돋보기 이미지"
+              style={{ width: '24px', height: '24px', flexShrink: '0' }}
+            />
           </SearchContainer>
           <TagList>
             {TAGS.map(t => (
@@ -293,20 +365,26 @@ export default function ProductList() {
         </SearchFrame>
         <ProductFrame>
           <ProductContainer>
-            {filtered.map(p => (
+            {products.map((p, index) => (
               <ProductBox
-                key={p.id}
-                onClick={() => {
-                  ProductHandleClick(p.id)
-                }}
+                key={`${p.product_id}-${index}`}
+                onClick={() => ProductHandleClick(p.id)}
               >
                 <Group>
-                  <PictureBox />
+                  <PictureBox
+                    src={p.image_url || null}
+                    alt={p.name || '상품 이미지'}
+                  />
                   <ProductTextBox>
-                    <Price>{p.price.toLocaleString()}</Price>
+                    <Price>
+                      {typeof p.price === 'number'
+                        ? p.price.toLocaleString() + '원'
+                        : '가격 정보 없음'}
+                    </Price>
+
                     <TextLine>
                       <Name>{p.name}</Name>
-                      <Store>{p.store}</Store>
+                      <Store>{p.category?.name}</Store>
                     </TextLine>
                   </ProductTextBox>
                 </Group>

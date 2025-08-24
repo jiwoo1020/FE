@@ -191,8 +191,6 @@ const CalendarWrap = styled.div`
   }
 `
 
-
-
 const EventListContainer = styled.div`
   position: fixed;
   left: 50%;
@@ -208,10 +206,10 @@ const EventListContainer = styled.div`
   flex-direction: column;
   gap: 6px;
 
-  box-sizing: border-box;   /* 패딩 포함 크기 계산 */
-  word-break: break-word;   /* 텍스트 넘치지 않게 줄바꿈 */
-  white-space: normal;      /* 줄바꿈 허용 */
-`;
+  box-sizing: border-box; /* 패딩 포함 크기 계산 */
+  word-break: break-word; /* 텍스트 넘치지 않게 줄바꿈 */
+  white-space: normal; /* 줄바꿈 허용 */
+`
 
 const EventContainer = styled.div`
   display: flex;
@@ -282,16 +280,16 @@ export default function Calendar() {
     setLoading(true)
     setError(null)
     try {
-      const url = `${import.meta.env.VITE_API_URL}/api/events/month?month=${encodeURIComponent(
-        monthKey
-      )}`
+      const url = `${
+        import.meta.env.VITE_API_URL
+      }/api/events/month?month=${encodeURIComponent(monthKey)}`
       console.log('요청 URL:', url)
       const res = await fetch(url, {
         method: 'GET',
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
         credentials: 'omit',
       })
@@ -343,7 +341,10 @@ export default function Calendar() {
     return m
   }, [events])
 
-  const eventDateSet = useMemo(() => new Set(eventsByDate.keys()), [eventsByDate])
+  const eventDateSet = useMemo(
+    () => new Set(eventsByDate.keys()),
+    [eventsByDate]
+  )
   const selectedKey = toKey(value)
   const selectedEvents = eventsByDate.get(selectedKey) || []
 
@@ -429,10 +430,14 @@ export default function Calendar() {
         <DragHandle onMouseDown={onDragStart} onTouchStart={onDragStart} />
         <Today>
           {expanded
-            ? `${format(value, 'M월 전체 일정', { locale: ko })} (${monthEvents.length}건)`
+            ? `${format(value, 'M월 전체 일정', { locale: ko })} (${
+                monthEvents.length
+              }건)`
             : selectedLabel}
         </Today>
-        <div style={{ overflowY: 'auto', height: `calc(${sheetHeight}px - 60px)` }}>
+        <div
+          style={{ overflowY: 'auto', height: `calc(${sheetHeight}px - 60px)` }}
+        >
           {loading && (
             <EventTitle
               style={{ color: '#808080', fontSize: '14px', marginTop: '20px' }}
@@ -447,13 +452,19 @@ export default function Calendar() {
               {error}
             </EventTitle>
           )}
-          {!loading && !error && (expanded ? monthEvents : selectedEvents).length === 0 && (
-            <EventTitle
-              style={{ color: '#808080', fontSize: '14px', marginTop: '20px' }}
-            >
-              이 날짜에는 행사가 없습니다.
-            </EventTitle>
-          )}
+          {!loading &&
+            !error &&
+            (expanded ? monthEvents : selectedEvents).length === 0 && (
+              <EventTitle
+                style={{
+                  color: '#808080',
+                  fontSize: '14px',
+                  marginTop: '20px',
+                }}
+              >
+                이 날짜에는 행사가 없습니다.
+              </EventTitle>
+            )}
           {!loading &&
             !error &&
             (expanded ? monthEvents : selectedEvents).map(e => (

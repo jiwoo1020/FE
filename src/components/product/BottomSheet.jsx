@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from '@emotion/styled'
 import { createPortal } from 'react-dom'
 
@@ -134,32 +134,27 @@ const Menu = styled.div`
 `
 const MenuContainer = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
   gap: 10px;
   align-self: stretch;
   margin-bottom: 27px;
-`
-const Menuline = styled.div`
   display: flex;
-  height: 30px;
-  padding-right: 0.153px;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 10px;
-  align-self: stretch;
+  flex-wrap: wrap;
+  width: 100%;
   flex-direction: row;
 `
 const MenuBox = styled.div`
   display: flex;
-  width: 140px;
   height: 20px;
-  padding: 7px 13px;
+  padding: 18px 13px;
   flex-direction: row;
   align-items: center;
   gap: 20px;
   border-radius: 5px;
   border: 1px solid #d9d9d9;
+  width: calc(50% - 10px);
+  cursor: pointer;
+  box-sizing: border-box;
 `
 const MenuText = styled.div`
   color: #000;
@@ -169,12 +164,7 @@ const MenuText = styled.div`
   font-weight: 400;
   line-height: normal;
 `
-const Check = styled.div`
-  width: 15px;
-  height: 15px;
-  border: 1px solid #d9d9d9;
-  border-radius: 100px;
-`
+const Check = styled.div``
 const Price = styled.div`
   display: flex;
   flex-direction: column;
@@ -220,27 +210,20 @@ const PriceText = styled.div`
   font-weight: 400;
   line-height: normal;
 `
-
-/* ====== component ====== */
-/**
- * BottomSheet
- * props:
- *  - open: boolean (필수)
- *  - title?: string (기본값 "필터")
- *  - onClose?: () => void
- *  - onApply?: () => void
- *  - onReset?: () => void
- *  - children: 시트 안에 들어갈 내용
- */
-export function BottomSheet({
+export default function BottomSheet({
   open,
   title = '필터',
   onClose,
   onApply,
   onReset,
-  children,
 }) {
-  // 열릴 때 배경 스크롤 잠금 + ESC 닫기
+  const [selectedSort, setSelectedSort] = useState(null)
+  const [selectCategory, setSelectCategory] = useState(null)
+  const [selectFlower, setSelectFlower] = useState(null)
+  const [selectColor, setSelectColor] = useState(null)
+  const [priceMin, setPriceMin] = useState('')
+  const [priceMax, setPriceMax] = useState('')
+
   useEffect(() => {
     if (!open) return
     const prev = document.body.style.overflow
@@ -254,8 +237,18 @@ export function BottomSheet({
   }, [open, onClose])
 
   if (!open) return null
+  const handleApplyClick = () => {
+    onApply?.({
+      sort: selectedSort,
+      category: selectCategory,
+      type: selectFlower,
+      color: selectColor,
+      price_min: priceMin ? Number(priceMin) : null,
+      price_max: priceMax ? Number(priceMax) : null,
+    })
+    onClose?.()
+  }
 
-  // 조상 스타일 영향 제거: body에 포털 렌더
   return createPortal(
     <>
       <Backdrop onClick={onClose} />
@@ -269,168 +262,115 @@ export function BottomSheet({
         </Header>
 
         <Body>
+          {/* 정렬 */}
           <Menu>
             정렬
             <MenuContainer>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>조회순</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>최신순</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>낮은 가격순</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>높은 가격순</MenuText>
-                </MenuBox>
-              </Menuline>
+              {['조회순', '최신순', '낮은 가격순', '높은 가격순'].map(
+                option => (
+                  <MenuBox key={option} onClick={() => setSelectedSort(option)}>
+                    <Check>{selectedSort === option ? '●' : '○'}</Check>
+                    <MenuText>{option}</MenuText>
+                  </MenuBox>
+                )
+              )}
             </MenuContainer>
           </Menu>
+
+          {/* 카테고리 */}
           <Menu>
-            {' '}
             카테고리
             <MenuContainer>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>생일</MenuText>
+              {[
+                '생일',
+                '어버이날',
+                '스승의 날',
+                '졸업식',
+                '화이트데이',
+                '로즈데이',
+              ].map(option => (
+                <MenuBox key={option} onClick={() => setSelectCategory(option)}>
+                  <Check>{selectCategory === option ? '●' : '○'}</Check>
+                  <MenuText>{option}</MenuText>
                 </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>어버이날</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>스승의 날</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>졸업식</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>화이트데이</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>로즈데이</MenuText>
-                </MenuBox>
-              </Menuline>
+              ))}
             </MenuContainer>
           </Menu>
+          {/* 가격 */}
           <Price>
-            {' '}
             가격
             <PriceContainer>
               <PriceBox>
-                <Check></Check>
-                <PriceText>10000</PriceText>
+                <input
+                  type="number"
+                  placeholder="최소"
+                  value={priceMin}
+                  onChange={e => setPriceMin(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    width: '100%',
+                    fontSize: '12px',
+                  }}
+                />
               </PriceBox>
-              <Rectengle></Rectengle>
+              <Rectengle />
               <PriceBox>
-                <Check></Check>
-                <PriceText>50000</PriceText>
+                <input
+                  type="number"
+                  placeholder="최대"
+                  value={priceMax}
+                  onChange={e => setPriceMax(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    width: '100%',
+                    fontSize: '12px',
+                  }}
+                />
               </PriceBox>
             </PriceContainer>
           </Price>
+          {/* 종류 */}
           <Menu>
-            {' '}
             종류
             <MenuContainer>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>장미</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>튤립</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>안개꽃</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>카네이션</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>데이지</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>기타</MenuText>
-                </MenuBox>
-              </Menuline>
+              {['장미', '튤립', '안개꽃', '카네이션', '데이지', '기타'].map(
+                option => (
+                  <MenuBox key={option} onClick={() => setSelectFlower(option)}>
+                    <Check>{selectFlower === option ? '●' : '○'}</Check>
+                    <MenuText>{option}</MenuText>
+                  </MenuBox>
+                )
+              )}
             </MenuContainer>
           </Menu>
+
+          {/* 색상 */}
           <Menu>
-            {' '}
             색상
             <MenuContainer>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>빨강</MenuText>
+              {[
+                '빨강',
+                '주황',
+                '노랑',
+                '초록',
+                '파랑',
+                '남색',
+                '보라',
+                '기타',
+              ].map(option => (
+                <MenuBox key={option} onClick={() => setSelectColor(option)}>
+                  <Check>{selectColor === option ? '●' : '○'}</Check>
+                  <MenuText>{option}</MenuText>
                 </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>주황</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>노랑</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>초록</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>파랑</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>남색</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>보라</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>기타</MenuText>
-                </MenuBox>
-              </Menuline>
+              ))}
             </MenuContainer>
           </Menu>
         </Body>
 
         <Footer>
-          <button className="solid" onClick={onApply}>
+          <button className="solid" onClick={handleApplyClick}>
             적용하기
           </button>
         </Footer>
