@@ -6,6 +6,9 @@ import { AiOutlineMinusCircle } from 'react-icons/ai'
 import { AiOutlineClose } from 'react-icons/ai'
 import Box from '../components/ProductCart/Box'
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import axios from 'axios'
+
 const Container = styled.div`
   position: relative;
   width: 100%;
@@ -95,42 +98,39 @@ const PButton = styled.div`
 `
 
 export default function ProductCart() {
-  const initial = [
-    {
-      id: '1',
-      title: '작약 (Peony)',
-      price: 15000,
-      qty: 5,
-      selected: false,
-      img: '/peony.png',
-    },
-    {
-      id: '2',
-      title: '작약 (Peony)',
-      price: 15000,
-      qty: 5,
-      selected: false,
-      img: '/peony.png',
-    },
-    {
-      id: '3',
-      title: '작약 (Peony)',
-      price: 15000,
-      qty: 5,
-      selected: false,
-      img: '/peony.png',
-    },
-    {
-      id: '4',
-      title: '작약 (Peony)',
-      price: 15000,
-      qty: 5,
-      selected: false,
-      img: '/peony.png',
-    },
-  ]
-  const [items, setItems] = useState(initial)
+  const navigate = useNavigate()
+  const [items, setItems] = useState([])
+  const selectAllRef = useRef(null)
 
+  // 1. 장바구니 불러오기
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await axios.get('/api/cart/items', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+
+        const list = res.data.data.items.map(ci => ({
+          id: ci.cart_item_id,
+          title: ci.name,
+          price: ci.unit_price,
+          qty: ci.quantity,
+          selected: false,
+          img: ci.image_url,
+          seller: ci.seller?.shop_name,
+          spec: ci.spec,
+        }))
+
+        setItems(list)
+      } catch (err) {
+        console.error('장바구니 조회 실패:', err)
+      }
+    }
+    fetchCart()
+  }, [])
+
+  // 2. 선택/전체선택
   const toggleSelect = (id, checked) =>
     setItems(prev =>
       prev.map(it => (it.id === id ? { ...it, selected: checked } : it))
@@ -139,23 +139,6 @@ export default function ProductCart() {
   const toggleSelectAll = checked =>
     setItems(prev => prev.map(it => ({ ...it, selected: checked })))
 
-  const incQty = id =>
-    setItems(prev =>
-      prev.map(it => (it.id === id ? { ...it, qty: it.qty + 1 } : it))
-    )
-
-  const decQty = id =>
-    setItems(prev =>
-      prev.map(it =>
-        it.id === id ? { ...it, qty: Math.max(1, it.qty - 1) } : it
-      )
-    )
-
-  const removeOne = id => setItems(prev => prev.filter(it => it.id !== id))
-
-  const removeSelected = () => setItems(prev => prev.filter(it => !it.selected))
-
-  // 상단 체크박스용 파생 상태
   const allSelected = useMemo(
     () => items.length > 0 && items.every(it => it.selected),
     [items]
@@ -164,14 +147,88 @@ export default function ProductCart() {
     () => items.some(it => it.selected) && !allSelected,
     [items, allSelected]
   )
-  const selectAllRef = useRef(null)
   useEffect(() => {
     if (selectAllRef.current) selectAllRef.current.indeterminate = someSelected
   }, [someSelected])
 
+  // 3. 수량 변경 API 연동
+  const updateQty = async (id, newQty) => {
+    try {
+      const token = localStorage.getItem('token')
+      const res = await axios.patch(
+        `/api/cart/items/${id}`,
+        { quantity: newQty },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
+      setItems(prev =>
+        prev.map(it =>
+          it.id === id ? { ...it, qty: res.data.data.cart_item.quantity } : it
+        )
+      )
+    } catch (err) {
+      console.error('수량 변경 실패:', err)
+      alert('수량 변경에 실패했습니다.')
+    }
+  }
+
+  const incQty = id => {
+    const item = items.find(it => it.id === id)
+    if (item) updateQty(id, item.qty + 1)
+  }
+
+  const decQty = id => {
+    const item = items.find(it => it.id === id)
+    if (item && item.qty > 1) updateQty(id, item.qty - 1)
+  }
+
+  // 4. 삭제 API 연동
+  const removeOne = async id => {
+    try {
+      const token = localStorage.getItem('token')
+      await axios.delete(`/api/cart/items/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      setItems(prev => prev.filter(it => it.id !== id))
+    } catch (err) {
+      console.error('장바구니 삭제 실패:', err)
+      alert('장바구니 항목 삭제에 실패했습니다.')
+    }
+  }
+
+  const removeSelected = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const selectedIds = items.filter(it => it.selected).map(it => it.id)
+
+      await Promise.all(
+        selectedIds.map(id =>
+          axios.delete(`/api/cart/items/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+        )
+      )
+
+      setItems(prev => prev.filter(it => it.id !== res.data.data.cart_item_id))
+    } catch (err) {
+      console.error('선택 항목 삭제 실패:', err)
+      alert('선택 항목 삭제에 실패했습니다.')
+    }
+  }
+
+  // 5. 주문 페이지 이동
+  const handleOrder = () => {
+    const selectedItems = items.filter(it => it.selected)
+    if (selectedItems.length === 0) {
+      alert('결제할 상품을 선택하세요.')
+      return
+    }
+    navigate('/order', { state: { selectedItems } })
+  }
+
   return (
     <Container>
-      <Header></Header>
+      <Header />
       <Up>
         <DeleteLine>
           <TotalPick>
@@ -186,12 +243,9 @@ export default function ProductCart() {
           </TotalPick>
           <DeleteText
             onClick={removeSelected}
-            disabled={!items.some(i => i.selected)}
             style={{
               opacity: items.some(i => i.selected) ? 1 : 0.4,
               cursor: items.some(i => i.selected) ? 'pointer' : 'not-allowed',
-              background: 'none',
-              border: 0,
             }}
           >
             선택 삭제
@@ -202,7 +256,7 @@ export default function ProductCart() {
         {items.map(item => (
           <Box
             key={item.id}
-            item={item} // 한 덩어리로 전달
+            item={item}
             onToggle={checked => toggleSelect(item.id, checked)}
             onInc={() => incQty(item.id)}
             onDec={() => decQty(item.id)}
@@ -210,7 +264,7 @@ export default function ProductCart() {
           />
         ))}
       </Body>
-      <PButton> 선택 상품 결제하기</PButton>
+      <PButton onClick={handleOrder}> 선택 상품 결제하기 </PButton>
     </Container>
   )
 }

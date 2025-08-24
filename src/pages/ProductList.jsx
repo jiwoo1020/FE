@@ -368,7 +368,7 @@ export default function ProductList() {
             {products.map((p, index) => (
               <ProductBox
                 key={`${p.product_id}-${index}`}
-                onClick={() => ProductHandleClick(p.product_id)}
+                onClick={() => ProductHandleClick(p.id)}
               >
                 <Group>
                   <PictureBox
