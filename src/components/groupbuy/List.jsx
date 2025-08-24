@@ -53,29 +53,43 @@ const ApplyButton = styled.button`
   align-items: center;
   justify-content: center;
 `
+const DisabledButton = styled.button`
+  background: #ccc;
+  color: #666;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: not-allowed;
+`
 
-export default function FlowerCard({
+export default function List({
   imageSrc,
   representative,
   address,
   currentCount,
   maxCount,
   storeName,
+  price,
   deliveryDate,
+  applied,
   onApply,
 }) {
   return (
     <Card>
       <Image src={imageSrc} alt="꽃" />
       <Info>
-        <div>대표: {representative}</div>
         <div>배송지: {address}</div>
         <div>
           모집 인원수: {currentCount} / {maxCount}
         </div>
         <div>구매 농장: {storeName}</div>
+        <div>가격: {price}</div>
         <div>배송일: {deliveryDate}</div>
-        <ApplyButton onClick={onApply}>신청하기</ApplyButton>
+        {applied ? (
+          <DisabledButton disabled>신청완료</DisabledButton>
+        ) : (
+          <ApplyButton onClick={onApply}>신청하기</ApplyButton>
+        )}
       </Info>
     </Card>
   )

@@ -8,16 +8,100 @@ import AddressCard from '../components/groupbuy/AddressCard'
 import DeliveryDateCard from '../components/groupbuy/DeliveryDateCard'
 import DeadlineCard from '../components/groupbuy/DeadlineCard'
 import MemberCountCard from '../components/groupbuy/MemberCountCard'
+import axios from 'axios'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 export default function GroupBuyCreate() {
-  const [selected, setSelected] = useState(null)
+  // 입력값 state
+  const [leaderQty, setLeaderQty] = useState('')
+  const [recipientName, setRecipientName] = useState('')
+  const [recipientPhone, setRecipientPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [applyDeadlineAt, setApplyDeadlineAt] = useState('')
+  const [desiredDeliveryAt, setDesiredDeliveryAt] = useState('')
+  const [minParticipants, setMinParticipants] = useState(3)
+  const [maxParticipants, setMaxParticipants] = useState(10)
+  const leaderName = localStorage.getItem('username')
 
-  const handleSelect = () => {
-    setSelected({
-      image: PeonyImg,
-      name: '작약 (Peony)',
-      farm: '멋사네 가게',
-    })
+  const location = useLocation()
+  const navigate = useNavigate()
+  const product = location.state?.product
+
+  const dummyProduct = {
+    productId: 17,
+    name: '작약',
+    store: '멋사네 가게',
+    image: PeonyImg, // import 해둔 이미지 사용
+  }
+  const [selected, setSelected] = useState(product ?? dummyProduct)
+  const goToProductList = () => {
+    navigate('/product') // 실제 ProductList 라우트 경로로 수정
+  }
+
+  function formatDateTimeLocal(dateStr) {
+    if (!dateStr) return null
+    const d = new Date(dateStr)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    const hours = String(d.getHours()).padStart(2, '0')
+    const minutes = String(d.getMinutes()).padStart(2, '0')
+    const seconds = String(d.getSeconds()).padStart(2, '0')
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+  }
+  // 공동구매 생성
+  const handleCreate = async () => {
+    if (!selected) {
+      alert('상품을 먼저 선택해주세요!')
+      return
+    }
+
+    if (applyDeadlineAt && desiredDeliveryAt) {
+      const deadline = new Date(applyDeadlineAt)
+      const delivery = new Date(desiredDeliveryAt)
+
+      if (deadline >= delivery) {
+        alert(
+          '⚠️ 공동구매 마감일은 희망 배송일보다 반드시 앞선 날짜여야 합니다.'
+        )
+        return
+      }
+    }
+
+    const payload = {
+      productId: selected?.productId ?? null,
+      leaderQuantity: Number(leaderQty) || 1,
+      minParticipants: Number(minParticipants) || 3,
+      maxParticipants: Number(maxParticipants) || 10,
+      applyDeadlineAt: formatDateTimeLocal(applyDeadlineAt),
+      desiredDeliveryAt: formatDateTimeLocal(desiredDeliveryAt),
+      recipientName,
+      recipientPhone,
+      address,
+    }
+
+    console.log('보내는 payload:', payload)
+
+    try {
+      const token = localStorage.getItem('token')
+
+      const response = await axios.post('/api/group-purchases', payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      console.log('✅ 공동구매 생성 성공:', response.data)
+      alert(
+        `공동구매 방이 생성되었습니다! (ID: ${response.data.data.group_id})`
+      )
+    } catch (err) {
+      if (err.response) {
+        console.error('❌ 공동구매 생성 실패:', err.response.data)
+      }
+      alert('공동구매 방 생성에 실패했습니다.')
+    }
   }
 
   return (
@@ -29,15 +113,17 @@ export default function GroupBuyCreate() {
         <Row>
           <Label>공동구매 대표</Label>
           <Divider />
-          <Value>아무개</Value>
+          <Value>{leaderName}</Value>
         </Row>
       </Card>
+
+      {/* 공동구매 항목 */}
       <Card>
         <SectionTitle>공동구매 항목</SectionTitle>
         {!selected ? (
           <Row>
             <Image src={Logo} alt="기본 로고" />
-            <SelectBox onClick={handleSelect}>항목 선택하기</SelectBox>
+            <SelectBox onClick={goToProductList}>항목 선택하기</SelectBox>
           </Row>
         ) : (
           <Row>
@@ -54,18 +140,36 @@ export default function GroupBuyCreate() {
                 <InfoRow>
                   <SmallLabel>구매 농장</SmallLabel>
                   <Divider />
-                  <SmallValue>{selected.farm}</SmallValue>
+                  <SmallValue>{selected.store}</SmallValue>
                 </InfoRow>
               </InfoBox>
             </InfoCol>
           </Row>
         )}
       </Card>
-      <AddressCard />
-      <DeliveryDateCard />
-      <DeadlineCard />
-      <MemberCountCard />
-      <CreateButton>공동구매 방 생성</CreateButton>
+
+      {/* 입력 카드들 */}
+      <AddressCard
+        recipientName={recipientName}
+        onChangeName={setRecipientName}
+        recipientPhone={recipientPhone}
+        onChangePhone={setRecipientPhone}
+        address={address}
+        onChangeAddress={setAddress}
+      />
+      <DeliveryDateCard
+        value={desiredDeliveryAt}
+        onChange={setDesiredDeliveryAt}
+      />
+      <DeadlineCard value={applyDeadlineAt} onChange={setApplyDeadlineAt} />
+      <MemberCountCard
+        minValue={minParticipants}
+        maxValue={maxParticipants}
+        onChangeMin={setMinParticipants}
+        onChangeMax={setMaxParticipants}
+      />
+
+      <CreateButton onClick={handleCreate}>공동구매 방 생성</CreateButton>
     </Container>
   )
 }

@@ -1,57 +1,60 @@
-import { useState } from 'react'
+import { useState, forwardRef } from 'react'
 import styled from '@emotion/styled'
 
-export default function TextField({
-  label,
-  type = 'text',
-  placeholder,
-  value,
-  onChange,
-  toggle = false, // password 눈 아이콘 표시 여부
-  minLength,
-  maxLength,
-  pattern,
-  required,
-  inputMode,
-  title,
-  showCount = false,
-  error = '',
-  onBlur,
-}) {
-  const [show, setShow] = useState(false)
-  const isPassword = type === 'password'
+const TextField = forwardRef(
+  (
+    {
+      label,
+      type = 'text',
+      placeholder,
+      toggle = false, // password 눈 아이콘 표시 여부
+      minLength,
+      maxLength,
+      pattern,
+      required,
+      inputMode,
+      title,
+      error = '',
+      ...rest // RHF에서 넘겨주는 onChange, onBlur, name, value 등
+    },
+    ref
+  ) => {
+    const [show, setShow] = useState(false)
+    const isPassword = type === 'password'
 
-  return (
-    <Field>
-      {label && <Label>{label}</Label>}
-      <InputArea>
-        <Input
-          type={isPassword ? (show ? 'text' : 'password') : type}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          onBlur={onBlur}
-          minLength={minLength}
-          maxLength={maxLength}
-          pattern={pattern}
-          required={required}
-          inputMode={inputMode}
-          title={title}
-        />
-        {toggle && isPassword && (
-          <EyeButton
-            type="button"
-            aria-label={show ? 'hide password' : 'show password'}
-            onClick={() => setShow(v => !v)}
-          >
-            <EyeIcon />
-          </EyeButton>
-        )}
-      </InputArea>
-    </Field>
-  )
-}
+    return (
+      <Field>
+        {label && <Label>{label}</Label>}
+        <InputArea>
+          <Input
+            ref={ref} // ✅ RHF register에서 전달받은 ref
+            type={isPassword ? (show ? 'text' : 'password') : type}
+            placeholder={placeholder}
+            minLength={minLength}
+            maxLength={maxLength}
+            pattern={pattern}
+            required={required}
+            inputMode={inputMode}
+            title={title}
+            {...rest} // ✅ RHF register에서 전달받은 onChange, onBlur, name, value
+          />
+          {toggle && isPassword && (
+            <EyeButton
+              type="button"
+              aria-label={show ? 'hide password' : 'show password'}
+              onClick={() => setShow(v => !v)}
+            >
+              <EyeIcon />
+            </EyeButton>
+          )}
+        </InputArea>
+        {error && <ErrorMsg>{error}</ErrorMsg>}
+      </Field>
+    )
+  }
+)
 
+export default TextField
 const Field = styled.div`
   display: flex;
   flex-direction: column;
@@ -121,4 +124,9 @@ const EyeIcon = styled.span`
     border: 1.3px solid #acb5bb;
     border-radius: 999px;
   }
+`
+const ErrorMsg = styled.p`
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: red;
 `

@@ -1,23 +1,45 @@
 import Card from './Card'
 import styled from '@emotion/styled'
 
-export default function AddressCard() {
+export default function AddressCard({
+  recipientName,
+  onChangeName,
+  recipientPhone,
+  onChangePhone,
+  address,
+  onChangeAddress,
+}) {
   return (
     <Card>
       <SectionTitle>배송지 입력</SectionTitle>
       <InputRow>
         <InputBox>
           <InputLabel>받는 분</InputLabel>
-          <Input type="text" placeholder="이름 입력" />
+          <Input
+            type="text"
+            placeholder="이름 입력"
+            value={recipientName}
+            onChange={e => onChangeName(e.target.value)}
+          />
         </InputBox>
         <InputBox>
           <InputLabel>연락처</InputLabel>
-          <Input type="text" placeholder="010-0000-0000" />
+          <Input
+            type="text"
+            placeholder="010-0000-0000"
+            value={recipientPhone}
+            onChange={e => onChangePhone(e.target.value)}
+          />
         </InputBox>
       </InputRow>
       <InputBox full>
         <InputLabel>주소</InputLabel>
-        <Input type="text" placeholder="주소 입력" />
+        <Input
+          type="text"
+          placeholder="주소 입력"
+          value={address}
+          onChange={e => onChangeAddress(e.target.value)}
+        />
       </InputBox>
     </Card>
   )

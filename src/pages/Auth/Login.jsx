@@ -1,41 +1,64 @@
-import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
 import styled from '@emotion/styled'
 import BackgroundEllipses from '@/components/Auth/BackgroundEllipses'
 import Header from '@/components/Auth/Header'
 import TextField from '@/components/Auth/TextField'
 import logoPium from '../../assets/logo.svg'
 import logoFlower from '../../assets/flowers.svg'
-import { useNavigate } from 'react-router-dom'
+
+// Yup 스키마
+const schema = yup.object().shape({
+  username: yup
+    .string()
+    .matches(/^[a-z0-9_]{4,20}$/, '아이디는 소문자/숫자 4~20자여야 합니다.')
+    .required('아이디를 입력하세요.'),
+  password: yup
+    .string()
+    .min(8, '비밀번호는 최소 8자 이상이어야 합니다.')
+    .matches(
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*?]).{8,}$/,
+      '비밀번호는 8자 이상, 영문/숫자/특수문자 포함'
+    )
+    .required('비밀번호를 입력하세요.'),
+})
 
 export default function Login() {
-  const [name, setName] = useState('')
-  const [pw, setPw] = useState('')
   const navigate = useNavigate()
-  const handleLoginClick = async e => {
-    e.preventDefault() // form submit 막기
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+    mode: 'onBlur',
+  })
+
+  const onSubmit = async values => {
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Accept: 'application/json', // Swagger 맞추기
+          Accept: 'application/json',
         },
-        body: JSON.stringify({ username: name, password: pw }),
-        // body: JSON.stringify({ username: 'ss1234', password: '1234qwer!' }),
-        credentials: 'include',
+        body: JSON.stringify(values),
       })
+
       if (!response.ok) {
-        alert('로그인 실패: 아이디 또는 비밀번호를 확인하세요.')
-        console.error('로그인 실패 응답:', response.status, response.statusText)
+        console.error('로그인 실패:', response.status, response.statusText)
+        alert('아이디 또는 비밀번호를 확인하세요.')
         return
       }
 
       const data = await response.json()
       console.log('서버 응답:', data)
 
-      if (data.data.accessToken) {
-        localStorage.setItem('token', data.data.accessToken) // 토큰 저장
-        alert('로그인 성공!')
+      if (data.data?.accessToken) {
+        localStorage.setItem('token', data.data.accessToken)
+        localStorage.setItem('username', values.username)
         navigate('/')
       } else {
         alert('로그인 실패: 토큰이 없습니다.')
@@ -60,28 +83,32 @@ export default function Login() {
           <SubTitle>Enter your id and password to log in</SubTitle>
         </TextWrap>
 
-        <Form onSubmit={handleLoginClick}>
+        <Form onSubmit={handleSubmit(onSubmit)}>
           <TextField
             label="Id"
             placeholder="아이디를 작성해주세요."
-            value={name}
-            onChange={e => setName(e.target.value)}
+            autoComplete="off"
+            {...register('username')}
           />
+          {errors.username && <ErrorMsg>{errors.username.message}</ErrorMsg>}
+
           <TextField
             label="Password"
             type="password"
-            toggle //눈 아이콘 활성화
+            autoComplete="new-password"
+            toggle
             placeholder="비밀번호를 작성해주세요."
-            value={pw}
-            onChange={e => setPw(e.target.value)}
+            {...register('password')}
           />
+          {errors.password && <ErrorMsg>{errors.password.message}</ErrorMsg>}
+
           <PrimaryButton type="submit">Log In</PrimaryButton>
         </Form>
 
-        <SignupRow>
+        <AuthRow>
           <span>Don’t have an account?</span>
           <a href="/auth/signup">Sign Up</a>
-        </SignupRow>
+        </AuthRow>
       </Card>
     </Container>
   )
@@ -186,7 +213,7 @@ const PrimaryButton = styled.button`
   cursor: pointer;
 `
 
-const SignupRow = styled.div`
+const AuthRow = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
@@ -204,4 +231,9 @@ const SignupRow = styled.div`
     font-weight: 600;
     text-decoration: none;
   }
+`
+const ErrorMsg = styled.p`
+  color: red;
+  font-size: 12px;
+  margin: 0;
 `
