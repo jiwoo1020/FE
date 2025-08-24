@@ -1,12 +1,14 @@
 import styled from '@emotion/styled'
 import BottomNav from '../components/nav/BottomNav'
 import { IoIosInformationCircleOutline } from 'react-icons/io'
-import FlowerImg from '../assets/b7d9af64da72a9d6cd3297b100d7b2df6a7006e8.png'
+import FlowerImg from '../assets/peony.svg'
 import LionImg from '../assets/38e6f83760d768b7920b217f1742ff63eb959e07.png'
 import Right from '../assets/화살표_오른쪽.svg'
 import { useEffect, useState } from 'react'
 import BuySheet from '../components/ProductDetail/BuySheet'
-
+import Header from '../components/nav/Header'
+import { useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 const Container = styled.div`
   position: relative;
   width: 100%;
@@ -18,18 +20,6 @@ const Container = styled.div`
   height: auto;
   overflow-y: auto;
   padding-bottom: 90px;
-`
-const Header = styled.div`
-  display: flex;
-  width: 100%;
-  height: 50px;
-  background: #1f3906;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 306px;
-  box-sizing: border-box;
 `
 const StoreContainer = styled.div`
   width: 393px;
@@ -47,7 +37,7 @@ const StoreBox = styled.div`
   margin-bottom: 5px;
   margin-left: 20px;
 `
-const StoreText = styled.div`
+const Shopname = styled.div`
   color: #111;
   font-family: Pretendard;
   font-size: 12px;
@@ -177,7 +167,7 @@ const BuyTextLine = styled.div`
   margin-left: 21px;
   flex-direction: row;
 `
-const Price = styled.div`
+const Money = styled.div`
   color: #1f3906;
   font-family: Inter;
   font-size: 25px;
@@ -332,18 +322,65 @@ const Gbox = styled.div`
   margin-top: -10px;
 `
 
-export default function ProductDetail() {
+export default function ProductDetail({ value, onChange }) {
+  const { id } = useParams()
+  console.log('ProductDetail useParams id:', id)
   const [open, setOpen] = useState(false)
   const [activeId, setActiveId] = useState(null)
+  const navigate = useNavigate()
+  const [name, setName] = useState('')
+  const [image_url, setImage_url] = useState(FlowerImg)
+  const [info, setInfo] = useState('')
+  const [price, setPrice] = useState('')
+  const [shop_name, setShop_name] = useState('')
+
+  useEffect(() => {
+    if (id) {
+      const fetchProductDetail = async () => {
+        try {
+          const token = localStorage.getItem('token')
+          const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/product/${id}`,
+            {
+              method: 'GET',
+              headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          )
+
+          console.log('HTTP Status:', res.status)
+
+          if (!res.ok) {
+            const errorData = await res.json()
+            console.error('상품 상세 조회 실패:', errorData)
+            return
+          }
+          const resData = await res.json() // 전체 응답 데이터를 resData에 저장
+          const productData = resData.data.product // product 객체로 접근
+
+          setName(productData.name)
+          setInfo(productData.info)
+          setPrice(productData.price.toString())
+          setImage_url(productData.imageMainUrl) // ✅ 서버 응답과 맞춤
+          setShop_name(productData.shopName)
+
+          console.log('상품 상세 조회 성공:', productData)
+        } catch (err) {
+          console.error(' 네트워크 오류:', err)
+        }
+      }
+
+      fetchProductDetail()
+    }
+  }, [id])
 
   return (
     <Container>
       <Header></Header>
-      <img
-        src={FlowerImg}
-        alt="꽃 이미지"
-        style={{ width: '393px', height: '304px', flexshrink: '0' }}
-      />
+      <img src={image_url} alt="상품 이미지" />
       <StoreContainer>
         <StoreBox>
           <img
@@ -351,7 +388,7 @@ export default function ProductDetail() {
             alt="사자 이미지"
             style={{ width: '30px', height: '30px', borderradius: '30px' }}
           />
-          <StoreText>멋사네 가게</StoreText>
+          <Shopname>{shop_name}</Shopname>
           <img
             src={Right}
             alt="가게 바로가기"
@@ -360,15 +397,10 @@ export default function ProductDetail() {
         </StoreBox>
       </StoreContainer>
       <ContentContainer>
-        <ContentTitle>작약(Peony)</ContentTitle>
+        <ContentTitle> {name}</ContentTitle>
         <ContentBox>
           <BoxTitle>상품 정보</BoxTitle>
-          <BoxDetail>
-            {' '}
-            {
-              '색상: 연분홍\n원산지: 국산\n크기: 10~12 cm\n특징: 꽃잎이 겹겹이 풍성하고 둥근 상태 '
-            }
-          </BoxDetail>
+          <BoxDetail>{info}</BoxDetail>
         </ContentBox>
         <AIContainer>
           <AITextBox>
@@ -380,7 +412,7 @@ export default function ProductDetail() {
               />
               <Rectengle></Rectengle>
               <Circle></Circle>
-              <FreshText>매우 신선</FreshText>
+              <FreshText></FreshText>
             </AITextLine>
             {open && (
               <div>
@@ -414,16 +446,23 @@ export default function ProductDetail() {
       </ContentContainer>
       <BuyContainer>
         <BuyTextLine>
-          <Price>3000</Price>
+          <Money>{price}</Money>
           <BuyText>원/송이</BuyText>
         </BuyTextLine>
         <ButtonLine>
-          <ShopListButton>
+          <ShopListButton
+            onClick={() => {
+              handleClickShop()
+            }}
+          >
             <ShopText>장바구니</ShopText>
           </ShopListButton>
           <BuyButton
             style={{ cursor: 'pointer' }}
-            onClick={() => setActiveId('BuyButton')}
+            onClick={() => {
+              setActiveId('BuyButton')
+              HandleBuyButton()
+            }}
           >
             <PayText>바로 결제</PayText>
           </BuyButton>

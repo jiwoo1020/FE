@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { BottomSheet } from '../components/product/BottomSheet'
 import MainHeader from '../components/nav/Header'
-
+import { useNavigate } from 'react-router-dom'
 const Container = styled.div`
   position: relative;
   width: 100%;
@@ -218,6 +218,7 @@ const MOCK = Array.from({ length: 9 }).map((_, i) => ({
 }))
 
 export default function ProductList() {
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [activeChip, setActiveChip] = useState(null)
 
@@ -232,6 +233,9 @@ export default function ProductList() {
     price: [10000, 50000],
   })
   const filtered = useMemo(() => MOCK, [selected])
+  const ProductHandleClick = id => {
+    navigate(`/product/${id}`)
+  }
 
   return (
     <Container>
@@ -290,7 +294,12 @@ export default function ProductList() {
         <ProductFrame>
           <ProductContainer>
             {filtered.map(p => (
-              <ProductBox key={p.id}>
+              <ProductBox
+                key={p.id}
+                onClick={() => {
+                  ProductHandleClick(p.id)
+                }}
+              >
                 <Group>
                   <PictureBox />
                   <ProductTextBox>
