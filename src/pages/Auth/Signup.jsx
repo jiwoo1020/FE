@@ -6,8 +6,10 @@ import TextField from '../../components/Auth/TextField'
 import RoleSelector from '../../components/Auth/RoleSelector'
 import logoPium from '../../assets/logo.svg'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 export default function Signup() {
+  const navigate = useNavigate()
   const [userName, setUserName] = useState('')
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
@@ -62,19 +64,18 @@ export default function Signup() {
         console.log(response)
         if (response.status === 200 || response.status === 201) {
           alert('회원가입 성공')
-          // 회원가입 후 바로 로그인 토큰을 발급해주는 경우
           if (response.data.token) {
             localStorage.setItem('token', response.data.token)
             navigate('/')
           } else {
-            navigate('/login')
+            navigate('/auth/login')
           }
         }
       })
       .catch(err => {
         setMessage(err.response?.data?.message)
         console.log(err)
-        console.log(err.response.data)
+        // console.log(err.response.data)
       })
   }
   return (

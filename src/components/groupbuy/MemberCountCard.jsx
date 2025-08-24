@@ -1,13 +1,16 @@
-import { useState } from 'react'
 import Card from './Card'
 import styled from '@emotion/styled'
 import Slider from '@mui/material/Slider'
 
-export default function MemberCountCard() {
-  const [countRange, setCountRange] = useState([3, 10])
-
+export default function MemberCountCard({
+  minValue,
+  maxValue,
+  onChangeMin,
+  onChangeMax,
+}) {
   const handleRangeChange = (e, newValue) => {
-    setCountRange(newValue)
+    onChangeMin(newValue[0])
+    onChangeMax(newValue[1])
   }
 
   return (
@@ -16,24 +19,24 @@ export default function MemberCountCard() {
       <Row>
         <NumberInput
           type="number"
-          value={countRange[0]}
+          value={minValue}
           min={3}
-          max={countRange[1]}
-          onChange={e => setCountRange([Number(e.target.value), countRange[1]])}
+          max={maxValue}
+          onChange={e => onChangeMin(Number(e.target.value))}
         />
         <span>—</span>
         <NumberInput
           type="number"
-          value={countRange[1]}
-          min={countRange[0]}
+          value={maxValue}
+          min={minValue}
           max={20}
-          onChange={e => setCountRange([countRange[0], Number(e.target.value)])}
+          onChange={e => onChangeMax(Number(e.target.value))}
         />
       </Row>
-      <SmallHint>최소인원: {countRange[0]}명</SmallHint>
+      <SmallHint>최소인원: {minValue}명</SmallHint>
 
       <Slider
-        value={countRange}
+        value={[minValue, maxValue]}
         onChange={handleRangeChange}
         valueLabelDisplay="auto"
         min={3}
