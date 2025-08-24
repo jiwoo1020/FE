@@ -1,9 +1,12 @@
 import styled from '@emotion/styled'
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { BottomSheet } from '../components/product/BottomSheet'
+// ProductList.jsx
+import BottomSheet from '../components/product/BottomSheet'
 import MainHeader from '../components/nav/Header'
+import Search from '../assets/search.svg'
 import { useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 const Container = styled.div`
   position: relative;
   width: 100%;
@@ -221,7 +224,9 @@ export default function ProductList() {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [activeChip, setActiveChip] = useState(null)
-
+  const [list, setList] = useState([]) // 상품 목록 상태
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const handleClose = () => setOpen(false)
   const handleReset = () => {
     /* 선택값 초기화 */
@@ -236,6 +241,48 @@ export default function ProductList() {
   const ProductHandleClick = id => {
     navigate(`/product/${id}`)
   }
+  useEffect(() => {
+    const fetchProductList = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_API_URL
+          }/api/product?q=장미&category_id=21&type=rose&price_min=10000`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+
+        console.log('HTTP Status:', res.status)
+
+        if (!res.ok) {
+          const errorData = await res.json()
+          setError(errorData)
+          console.error('상품 목록 조회 실패:', errorData)
+          return
+        }
+
+        const resData = await res.json()
+        console.log('목록 조회 성공:', resData)
+
+        // ✅ 응답 구조에 맞게 데이터 꺼내기
+        setList(resData.content || [])
+      } catch (err) {
+        console.error('네트워크 오류:', err)
+        setError(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProductList()
+  }, [])
 
   return (
     <Container>
@@ -244,8 +291,24 @@ export default function ProductList() {
         <SearchFrame>
           <SearchContainer>
             <SearchBox>
-              <text>장미</text>
+              <input
+                type="text"
+                placeholder="검색어를 입력하세요"
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  flex: 1,
+                  fontSize: '14px',
+                  marginLeft: '10px',
+                }}
+              />
             </SearchBox>
+            <img
+              src={Search}
+              alt="돋보기 이미지"
+              style={{ width: '24px', height: '24px', flexShrink: '0' }}
+            />
           </SearchContainer>
           <TagList>
             {TAGS.map(t => (
@@ -301,12 +364,12 @@ export default function ProductList() {
                 }}
               >
                 <Group>
-                  <PictureBox />
+                  <PictureBox src={p.image_url} alt={p.name} />
                   <ProductTextBox>
-                    <Price>{p.price.toLocaleString()}</Price>
+                    <Price>{p.price.toLocaleString()}원</Price>
                     <TextLine>
                       <Name>{p.name}</Name>
-                      <Store>{p.store}</Store>
+                      <Store>{p.store || '가게명 없음'}</Store>
                     </TextLine>
                   </ProductTextBox>
                 </Group>
