@@ -50,9 +50,9 @@ const InfoValue = styled.span`
   line-height: 20px;
 `
 
+
 export default function StoreInfoCard({
   storeName = '',
-  location = '',
   accountNumber = '',
   storeNumber = '',
 }) {
@@ -64,15 +64,6 @@ export default function StoreInfoCard({
           <InfoValue>{storeName}</InfoValue>
         ) : (
           <InfoInput placeholder="가게 이름을 입력해주세요" />
-        )}
-      </InfoField>
-
-      <InfoField>
-        <Label>가게 위치</Label>
-        {location ? (
-          <InfoValue>{location}</InfoValue>
-        ) : (
-          <InfoInput placeholder="가게 위치를 입력해주세요" />
         )}
       </InfoField>
 
