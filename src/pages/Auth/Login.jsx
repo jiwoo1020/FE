@@ -59,6 +59,7 @@ export default function Login() {
       if (data.data?.accessToken) {
         localStorage.setItem('token', data.data.accessToken)
         localStorage.setItem('username', values.username)
+        // localStorage.setItem('userType', data.data?.userType)
         navigate('/')
       } else {
         alert('로그인 실패: 토큰이 없습니다.')

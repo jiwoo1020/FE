@@ -1,26 +1,30 @@
 import styled from '@emotion/styled'
 
-export default function TodayAnnouncement({
-  title = '장미데이',
-  date = '8월 20일 (오늘)',
-  desc = '연인들이 서로에 대한 사랑의 표현으로 장미를 주고받는 날',
-  badgeUrl,
-}) {
+export default function TodayAnnouncement({ events = [] }) {
   return (
     <Wrap>
       <H3>Today’s announcement</H3>
-      <Card>
-        <DateTxt>{date}</DateTxt>
-        <Badge
-          style={
-            badgeUrl
-              ? { backgroundImage: `url(${badgeUrl})`, backgroundSize: 'cover' }
-              : {}
-          }
-        />
-        <Main>{title}</Main>
-        <Desc>{desc}</Desc>
-      </Card>
+      {events.length === 0 ? (
+        <EmptyCard>오늘의 일정이 없습니다.</EmptyCard>
+      ) : (
+        events.map(e => (
+          <Card key={e.event_id}>
+            <DateTxt>{e.date}</DateTxt>
+            <Badge
+              style={
+                e.iconImageUrl
+                  ? {
+                      backgroundImage: `url(${e.iconImageUrl})`,
+                      backgroundSize: 'cover',
+                    }
+                  : {}
+              }
+            />
+            <Main>{e.title}</Main>
+            <Desc>{e.description}</Desc>
+          </Card>
+        ))
+      )}
     </Wrap>
   )
 }
@@ -44,11 +48,24 @@ const Card = styled.div`
   position: relative;
   width: 375px;
   height: 116px;
-  margin-left: 8px;
+  margin: 8px;
   background: #acc3b4;
   border-bottom: 1px solid #e2e2e2;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   border-radius: 24px;
+`
+const EmptyCard = styled.div`
+  position: relative;
+  width: 375px;
+  height: 80px;
+  margin: 8px;
+  background: #f2f2f2;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555;
+  font: 500 14px 'Pretendard';
 `
 const DateTxt = styled.span`
   position: absolute;

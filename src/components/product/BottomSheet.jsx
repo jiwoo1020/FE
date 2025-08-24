@@ -216,12 +216,14 @@ export default function BottomSheet({
   onClose,
   onApply,
   onReset,
-  children,
 }) {
   const [selectedSort, setSelectedSort] = useState(null)
   const [selectCategory, setSelectCategory] = useState(null)
   const [selectFlower, setSelectFlower] = useState(null)
   const [selectColor, setSelectColor] = useState(null)
+  const [priceMin, setPriceMin] = useState('')
+  const [priceMax, setPriceMax] = useState('')
+
   useEffect(() => {
     if (!open) return
     const prev = document.body.style.overflow
@@ -233,42 +235,20 @@ export default function BottomSheet({
       window.removeEventListener('keydown', onKey)
     }
   }, [open, onClose])
+
   if (!open) return null
+  const handleApplyClick = () => {
+    onApply?.({
+      sort: selectedSort,
+      category: selectCategory,
+      type: selectFlower,
+      color: selectColor,
+      price_min: priceMin ? Number(priceMin) : null,
+      price_max: priceMax ? Number(priceMax) : null,
+    })
+    onClose?.()
+  }
 
-  const sortOptions = [
-    { value: '조회순', label: '조회순' },
-    { value: '최신순', label: '최신순' },
-    { value: '낮은 가격순', label: '낮은 가격순' },
-    { value: '높은 가격순', label: '높은 가격순' },
-  ]
-  const category = [
-    { value: '생일', label: '생일' },
-    { value: '어버이날', label: '어버이날' },
-    { value: '스승의 날', label: '스승의 날' },
-    { value: '졸업식', label: '졸업식' },
-    { value: '화이트데이', label: '화이트데이' },
-    { value: '로즈데이', label: '로즈데이' },
-  ]
-  const flower = [
-    { value: '장미', label: '장미' },
-    { value: '튤립', label: '튤립' },
-    { value: '안개꽃', label: '안개꽃 ' },
-    { value: '카네이션', label: '카네이션' },
-    { value: '데이지', label: '데이지' },
-    { value: '기타', label: '기타' },
-  ]
-  const color = [
-    { value: '빨강', label: '빨강' },
-    { value: '주황', label: '주황' },
-    { value: '노랑', label: '노랑 ' },
-    { value: '초록', label: '초록' },
-    { value: '파랑', label: '파랑' },
-    { value: '남색', label: '남색' },
-    { value: '보라', label: '보라' },
-    { value: '기타', label: '기타' },
-  ]
-
-  // 조상 스타일 영향 제거: body에 포털 렌더
   return createPortal(
     <>
       <Backdrop onClick={onClose} />
@@ -282,80 +262,107 @@ export default function BottomSheet({
         </Header>
 
         <Body>
+          {/* 정렬 */}
           <Menu>
             정렬
             <MenuContainer>
-              {sortOptions.map(option => (
-                <MenuBox
-                  key={option.value}
-                  onClick={() => setSelectedSort(option.value)}
-                >
-                  {/* 선택 여부에 따라 체크 모양 달라짐 */}
-                  <Check>{selectedSort === option.value ? '●' : '○'}</Check>
-                  <MenuText>{option.label}</MenuText>
-                </MenuBox>
-              ))}
+              {['조회순', '최신순', '낮은 가격순', '높은 가격순'].map(
+                option => (
+                  <MenuBox key={option} onClick={() => setSelectedSort(option)}>
+                    <Check>{selectedSort === option ? '●' : '○'}</Check>
+                    <MenuText>{option}</MenuText>
+                  </MenuBox>
+                )
+              )}
             </MenuContainer>
           </Menu>
+
+          {/* 카테고리 */}
           <Menu>
-            {' '}
             카테고리
             <MenuContainer>
-              {category.map(option => (
-                <MenuBox
-                  key={option.value}
-                  onClick={() => setSelectCategory(option.value)}
-                >
-                  {/* 선택 여부에 따라 체크 모양 달라짐 */}
-                  <Check>{selectCategory === option.value ? '●' : '○'}</Check>
-                  <MenuText>{option.label}</MenuText>
+              {[
+                '생일',
+                '어버이날',
+                '스승의 날',
+                '졸업식',
+                '화이트데이',
+                '로즈데이',
+              ].map(option => (
+                <MenuBox key={option} onClick={() => setSelectCategory(option)}>
+                  <Check>{selectCategory === option ? '●' : '○'}</Check>
+                  <MenuText>{option}</MenuText>
                 </MenuBox>
               ))}
             </MenuContainer>
           </Menu>
+          {/* 가격 */}
           <Price>
-            {' '}
             가격
             <PriceContainer>
               <PriceBox>
-                <Check></Check>
-                <PriceText>10000</PriceText>
+                <input
+                  type="number"
+                  placeholder="최소"
+                  value={priceMin}
+                  onChange={e => setPriceMin(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    width: '100%',
+                    fontSize: '12px',
+                  }}
+                />
               </PriceBox>
-              <Rectengle></Rectengle>
+              <Rectengle />
               <PriceBox>
-                <Check></Check>
-                <PriceText>50000</PriceText>
+                <input
+                  type="number"
+                  placeholder="최대"
+                  value={priceMax}
+                  onChange={e => setPriceMax(e.target.value)}
+                  style={{
+                    border: 'none',
+                    outline: 'none',
+                    width: '100%',
+                    fontSize: '12px',
+                  }}
+                />
               </PriceBox>
             </PriceContainer>
           </Price>
+          {/* 종류 */}
           <Menu>
-            {' '}
             종류
             <MenuContainer>
-              {flower.map(option => (
-                <MenuBox
-                  key={option.value}
-                  onClick={() => setSelectFlower(option.value)}
-                >
-                  {/* 선택 여부에 따라 체크 모양 달라짐 */}
-                  <Check>{selectFlower === option.value ? '●' : '○'}</Check>
-                  <MenuText>{option.label}</MenuText>
-                </MenuBox>
-              ))}
+              {['장미', '튤립', '안개꽃', '카네이션', '데이지', '기타'].map(
+                option => (
+                  <MenuBox key={option} onClick={() => setSelectFlower(option)}>
+                    <Check>{selectFlower === option ? '●' : '○'}</Check>
+                    <MenuText>{option}</MenuText>
+                  </MenuBox>
+                )
+              )}
             </MenuContainer>
           </Menu>
+
+          {/* 색상 */}
           <Menu>
-            {' '}
             색상
             <MenuContainer>
-              {color.map(option => (
-                <MenuBox
-                  key={option.value}
-                  onClick={() => setSelectColor(option.value)}
-                >
-                  {/* 선택 여부에 따라 체크 모양 달라짐 */}
-                  <Check>{selectColor === option.value ? '●' : '○'}</Check>
-                  <MenuText>{option.label}</MenuText>
+              {[
+                '빨강',
+                '주황',
+                '노랑',
+                '초록',
+                '파랑',
+                '남색',
+                '보라',
+                '기타',
+              ].map(option => (
+                <MenuBox key={option} onClick={() => setSelectColor(option)}>
+                  <Check>{selectColor === option ? '●' : '○'}</Check>
+                  <MenuText>{option}</MenuText>
                 </MenuBox>
               ))}
             </MenuContainer>
@@ -363,7 +370,7 @@ export default function BottomSheet({
         </Body>
 
         <Footer>
-          <button className="solid" onClick={onApply}>
+          <button className="solid" onClick={handleApplyClick}>
             적용하기
           </button>
         </Footer>

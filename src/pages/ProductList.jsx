@@ -213,19 +213,13 @@ const TAGS = [
 ]
 const CHIPS = ['조회순', '카테고리', '가격', '종류', '색상']
 
-const MOCK = Array.from({ length: 9 }).map((_, i) => ({
-  id: i + 1,
-  price: 20000,
-  name: '장미',
-  store: '멋사네 가게',
-}))
-
 export default function ProductList() {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [activeChip, setActiveChip] = useState(null)
   const [list, setList] = useState([]) // 상품 목록 상태
   const [loading, setLoading] = useState(true)
+  const [products, setProducts] = useState([])
   const [error, setError] = useState(null)
   const handleClose = () => setOpen(false)
   const handleReset = () => {
@@ -237,7 +231,21 @@ export default function ProductList() {
     category: null,
     price: [10000, 50000],
   })
-  const filtered = useMemo(() => MOCK, [selected])
+  const filtered = useMemo(() => {
+    return products.filter(p => {
+      // 가격 필터
+      if (selected.price) {
+        if (p.price < selected.price[0] || p.price > selected.price[1]) {
+          return false
+        }
+      }
+      // 카테고리 필터
+      if (selected.category && p.category?.id !== selected.category) {
+        return false
+      }
+      return true
+    })
+  }, [products, selected])
   const ProductHandleClick = id => {
     navigate(`/product/${id}`)
   }
@@ -269,10 +277,11 @@ export default function ProductList() {
         }
 
         const resData = await res.json()
-        console.log('목록 조회 성공:', resData)
+        console.log('상품 목록 응답:', resData)
 
-        // ✅ 응답 구조에 맞게 데이터 꺼내기
-        setList(resData.content || [])
+        // ✅ DB 상품 목록 반영
+        setProducts(resData.content || [])
+        console.log('상품 목록 응답:', resData)
       } catch (err) {
         console.error('네트워크 오류:', err)
         setError(err)
@@ -356,20 +365,26 @@ export default function ProductList() {
         </SearchFrame>
         <ProductFrame>
           <ProductContainer>
-            {filtered.map(p => (
+            {products.map((p, index) => (
               <ProductBox
-                key={p.id}
-                onClick={() => {
-                  ProductHandleClick(p.id)
-                }}
+                key={`${p.product_id}-${index}`}
+                onClick={() => ProductHandleClick(p.id)}
               >
                 <Group>
-                  <PictureBox src={p.image_url} alt={p.name} />
+                  <PictureBox
+                    src={p.image_url || null}
+                    alt={p.name || '상품 이미지'}
+                  />
                   <ProductTextBox>
-                    <Price>{p.price.toLocaleString()}원</Price>
+                    <Price>
+                      {typeof p.price === 'number'
+                        ? p.price.toLocaleString() + '원'
+                        : '가격 정보 없음'}
+                    </Price>
+
                     <TextLine>
                       <Name>{p.name}</Name>
-                      <Store>{p.store || '가게명 없음'}</Store>
+                      <Store>{p.category?.name}</Store>
                     </TextLine>
                   </ProductTextBox>
                 </Group>

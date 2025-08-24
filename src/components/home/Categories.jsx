@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 export default function Categories({ items = [] }) {
   const navigate = useNavigate()
+
   return (
     <Wrap>
       <Head>
@@ -14,26 +15,47 @@ export default function Categories({ items = [] }) {
         {(items.length
           ? items
           : [
-              { name: 'Roses' },
-              { name: 'Lilies' },
-              { name: 'Tulips' },
-              { name: 'Daisies' },
+              {
+                id: 0,
+                name: '샘플상품1',
+                imageMainUrl: 'https://via.placeholder.com/71',
+              },
+              {
+                id: 1,
+                name: '샘플상품2',
+                imageMainUrl: 'https://via.placeholder.com/71',
+              },
+              {
+                id: 2,
+                name: '샘플상품3',
+                imageMainUrl: 'https://via.placeholder.com/71',
+              },
+              {
+                id: 3,
+                name: '샘플상품4',
+                imageMainUrl: 'https://via.placeholder.com/71',
+              },
             ]
-        ).map((it, i) => (
-          <Item key={i}>
-            <Thumb
-              style={
-                it.image
-                  ? {
-                      backgroundImage: `url(${it.image})`,
-                      backgroundSize: 'cover',
-                    }
-                  : {}
-              }
-            />
-            <Name>{it.name}</Name>
-          </Item>
-        ))}
+        ).map((it, i) => {
+          const imageUrl = it.imageMainUrl || (it.images?.[0]?.imageUrl ?? null)
+
+          return (
+            <Item key={i} onClick={() => navigate(`/product/${it.id}`)}>
+              <Thumb
+                style={
+                  imageUrl
+                    ? {
+                        backgroundImage: `url(${imageUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                      }
+                    : {}
+                }
+              />
+              <Name>{it.name}</Name>
+            </Item>
+          )
+        })}
       </Grid>
     </Wrap>
   )
@@ -62,6 +84,7 @@ const SeeAll = styled.a`
   font: 500 14px 'Poppins';
   color: #f06292;
   text-decoration: none;
+  cursor: pointer;
 `
 const Grid = styled.div`
   margin-top: 10px;
@@ -74,6 +97,7 @@ const Item = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 9px;
+  cursor: pointer;
 `
 const Thumb = styled.div`
   width: 71px;

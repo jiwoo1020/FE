@@ -1,5 +1,10 @@
 import { Suspense, lazy } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom'
 import GlobalStyles from './styles/globalstyles'
 import Layout from './components/nav/Layout'
 
@@ -23,7 +28,7 @@ const ProfileSellModi = lazy(() => import('./pages/ProfileSellModi'))
 const ProfileBuy = lazy(() => import('./pages/ProfileBuy'))
 
 function App() {
-  const userType = 'seller'
+  const userType = localStorage.getItem('userType') || 'consumer'
   return (
     <Router>
       <GlobalStyles />
@@ -59,13 +64,35 @@ function App() {
             {/* ######### 6 #########*/}
             {/* 상품관리 */}
             <Route path="/product/manage" element={<ProductManage />} />
-            {/* 프로필-판매자 */}
-            <Route path="/profile/sell" element={<ProfileSell />} />
-            {/* 프로필-판매자-수정 */}
-            <Route path="/profile/sell/modi" element={<ProfileSellModi />} />
-            {/* 프로필-구매자 */}
-            <Route path="/profile/buy" element={<ProfileBuy />} />
-            {/* 상품등록-텍스트 */}
+
+            {userType === 'consumer' ? (
+              <>
+                <Route path="/profile/buy" element={<ProfileBuy />} />
+                {/* 잘못된 접근 차단 */}
+                <Route
+                  path="/profile/sell"
+                  element={<Navigate to="/profile/buy" />}
+                />
+                <Route
+                  path="/profile/sell/modi"
+                  element={<Navigate to="/profile/buy" />}
+                />
+              </>
+            ) : (
+              <>
+                <Route path="/profile/sell" element={<ProfileSell />} />
+                <Route
+                  path="/profile/sell/modi"
+                  element={<ProfileSellModi />}
+                />
+                {/* 잘못된 접근 차단 */}
+                <Route
+                  path="/profile/buy"
+                  element={<Navigate to="/profile/sell" />}
+                />
+              </>
+            )}
+
             <Route
               path="/product/register/text"
               element={<ProductRegisterText />}

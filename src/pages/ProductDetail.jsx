@@ -333,7 +333,10 @@ export default function ProductDetail({ value, onChange }) {
   const [info, setInfo] = useState('')
   const [price, setPrice] = useState('')
   const [shop_name, setShop_name] = useState('')
-
+  const [products, setProducts] = useState([])
+  const handleClickShop = () => {
+    navigate('/product/cart') // 원하는 라우트로 이동
+  }
   useEffect(() => {
     if (id) {
       const fetchProductDetail = async () => {
