@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from '@emotion/styled'
 import { createPortal } from 'react-dom'
 
@@ -134,32 +134,27 @@ const Menu = styled.div`
 `
 const MenuContainer = styled.div`
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
   gap: 10px;
   align-self: stretch;
   margin-bottom: 27px;
-`
-const Menuline = styled.div`
   display: flex;
-  height: 30px;
-  padding-right: 0.153px;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 10px;
-  align-self: stretch;
+  flex-wrap: wrap;
+  width: 100%;
   flex-direction: row;
 `
 const MenuBox = styled.div`
   display: flex;
-  width: 140px;
   height: 20px;
-  padding: 7px 13px;
+  padding: 18px 13px;
   flex-direction: row;
   align-items: center;
   gap: 20px;
   border-radius: 5px;
   border: 1px solid #d9d9d9;
+  width: calc(50% - 10px);
+  cursor: pointer;
+  box-sizing: border-box;
 `
 const MenuText = styled.div`
   color: #000;
@@ -169,12 +164,7 @@ const MenuText = styled.div`
   font-weight: 400;
   line-height: normal;
 `
-const Check = styled.div`
-  width: 15px;
-  height: 15px;
-  border: 1px solid #d9d9d9;
-  border-radius: 100px;
-`
+const Check = styled.div``
 const Price = styled.div`
   display: flex;
   flex-direction: column;
@@ -220,19 +210,7 @@ const PriceText = styled.div`
   font-weight: 400;
   line-height: normal;
 `
-
-/* ====== component ====== */
-/**
- * BottomSheet
- * props:
- *  - open: boolean (필수)
- *  - title?: string (기본값 "필터")
- *  - onClose?: () => void
- *  - onApply?: () => void
- *  - onReset?: () => void
- *  - children: 시트 안에 들어갈 내용
- */
-export function BottomSheet({
+export default function BottomSheet({
   open,
   title = '필터',
   onClose,
@@ -240,7 +218,10 @@ export function BottomSheet({
   onReset,
   children,
 }) {
-  // 열릴 때 배경 스크롤 잠금 + ESC 닫기
+  const [selectedSort, setSelectedSort] = useState(null)
+  const [selectCategory, setSelectCategory] = useState(null)
+  const [selectFlower, setSelectFlower] = useState(null)
+  const [selectColor, setSelectColor] = useState(null)
   useEffect(() => {
     if (!open) return
     const prev = document.body.style.overflow
@@ -252,8 +233,40 @@ export function BottomSheet({
       window.removeEventListener('keydown', onKey)
     }
   }, [open, onClose])
-
   if (!open) return null
+
+  const sortOptions = [
+    { value: '조회순', label: '조회순' },
+    { value: '최신순', label: '최신순' },
+    { value: '낮은 가격순', label: '낮은 가격순' },
+    { value: '높은 가격순', label: '높은 가격순' },
+  ]
+  const category = [
+    { value: '생일', label: '생일' },
+    { value: '어버이날', label: '어버이날' },
+    { value: '스승의 날', label: '스승의 날' },
+    { value: '졸업식', label: '졸업식' },
+    { value: '화이트데이', label: '화이트데이' },
+    { value: '로즈데이', label: '로즈데이' },
+  ]
+  const flower = [
+    { value: '장미', label: '장미' },
+    { value: '튤립', label: '튤립' },
+    { value: '안개꽃', label: '안개꽃 ' },
+    { value: '카네이션', label: '카네이션' },
+    { value: '데이지', label: '데이지' },
+    { value: '기타', label: '기타' },
+  ]
+  const color = [
+    { value: '빨강', label: '빨강' },
+    { value: '주황', label: '주황' },
+    { value: '노랑', label: '노랑 ' },
+    { value: '초록', label: '초록' },
+    { value: '파랑', label: '파랑' },
+    { value: '남색', label: '남색' },
+    { value: '보라', label: '보라' },
+    { value: '기타', label: '기타' },
+  ]
 
   // 조상 스타일 영향 제거: body에 포털 렌더
   return createPortal(
@@ -272,62 +285,32 @@ export function BottomSheet({
           <Menu>
             정렬
             <MenuContainer>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>조회순</MenuText>
+              {sortOptions.map(option => (
+                <MenuBox
+                  key={option.value}
+                  onClick={() => setSelectedSort(option.value)}
+                >
+                  {/* 선택 여부에 따라 체크 모양 달라짐 */}
+                  <Check>{selectedSort === option.value ? '●' : '○'}</Check>
+                  <MenuText>{option.label}</MenuText>
                 </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>최신순</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>낮은 가격순</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>높은 가격순</MenuText>
-                </MenuBox>
-              </Menuline>
+              ))}
             </MenuContainer>
           </Menu>
           <Menu>
             {' '}
             카테고리
             <MenuContainer>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>생일</MenuText>
+              {category.map(option => (
+                <MenuBox
+                  key={option.value}
+                  onClick={() => setSelectCategory(option.value)}
+                >
+                  {/* 선택 여부에 따라 체크 모양 달라짐 */}
+                  <Check>{selectCategory === option.value ? '●' : '○'}</Check>
+                  <MenuText>{option.label}</MenuText>
                 </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>어버이날</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>스승의 날</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>졸업식</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>화이트데이</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>로즈데이</MenuText>
-                </MenuBox>
-              </Menuline>
+              ))}
             </MenuContainer>
           </Menu>
           <Price>
@@ -349,82 +332,32 @@ export function BottomSheet({
             {' '}
             종류
             <MenuContainer>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>장미</MenuText>
+              {flower.map(option => (
+                <MenuBox
+                  key={option.value}
+                  onClick={() => setSelectFlower(option.value)}
+                >
+                  {/* 선택 여부에 따라 체크 모양 달라짐 */}
+                  <Check>{selectFlower === option.value ? '●' : '○'}</Check>
+                  <MenuText>{option.label}</MenuText>
                 </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>튤립</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>안개꽃</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>카네이션</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>데이지</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>기타</MenuText>
-                </MenuBox>
-              </Menuline>
+              ))}
             </MenuContainer>
           </Menu>
           <Menu>
             {' '}
             색상
             <MenuContainer>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>빨강</MenuText>
+              {color.map(option => (
+                <MenuBox
+                  key={option.value}
+                  onClick={() => setSelectColor(option.value)}
+                >
+                  {/* 선택 여부에 따라 체크 모양 달라짐 */}
+                  <Check>{selectColor === option.value ? '●' : '○'}</Check>
+                  <MenuText>{option.label}</MenuText>
                 </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>주황</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>노랑</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>초록</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>파랑</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>남색</MenuText>
-                </MenuBox>
-              </Menuline>
-              <Menuline>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>보라</MenuText>
-                </MenuBox>
-                <MenuBox>
-                  <Check></Check>
-                  <MenuText>기타</MenuText>
-                </MenuBox>
-              </Menuline>
+              ))}
             </MenuContainer>
           </Menu>
         </Body>
