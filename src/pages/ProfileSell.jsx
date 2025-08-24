@@ -284,7 +284,38 @@ export default function ProfileSell() {
     setError(null)
     fetchGroupPurchaseList()
   }, [])
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const rawToken = localStorage.getItem('token')
+        if (!rawToken) throw new Error('NO_TOKEN')
   
+        const token = rawToken.startsWith('Bearer')
+          ? rawToken
+          : `Bearer ${rawToken}`
+  
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/product`, {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            Authorization: token,
+          },
+        })
+  
+        if (!res.ok) throw new Error(`HTTP_${res.status}`)
+  
+        const json = await res.json()
+        console.log('✅ 상품 목록 불러오기 성공:', json.data.items)
+        setProducts(json.data.items)
+      } catch (err) {
+        console.error('❌ 상품 목록 불러오기 실패:', err.message)
+      }
+    }
+  
+    fetchProducts()
+  }, [])
+  
+
 
   const STEP_ITEMS = [
     {
@@ -348,11 +379,28 @@ export default function ProfileSell() {
           </Toggle>
         </ManageProductHeader>
         <Grid>
-          {products.map((name, idx) => (
-            <ProductCard key={idx} onClick={() => navigate('/product/:id')}>
-              <ProductName>{name}</ProductName>
-            </ProductCard>
-          ))}
+          {products.length === 0 ? (
+            <div
+              style={{
+                gridColumn: '1 / -1', // 3열 전체 차지
+                textAlign: 'center',
+                fontSize: '14px',
+                color: '#666',
+                marginTop: '20px',
+              }}
+            >
+              등록된 상품이 없습니다.
+            </div>
+          ) : (
+            products.map((product) => (
+              <ProductCard
+                key={product.product_id}
+                onClick={() => navigate(`/product/${product.product_id}`)}
+              >
+                <ProductName>{product.name}</ProductName>
+              </ProductCard>
+            ))
+          )}
         </Grid>
 
         <ProductRegisterContainer>
