@@ -333,7 +333,7 @@ export default function ProductDetail({ value, onChange }) {
   const [info, setInfo] = useState('')
   const [price, setPrice] = useState('')
   const [shop_name, setShop_name] = useState('')
-
+  const [products, setProducts] = useState([])
   useEffect(() => {
     if (id) {
       const fetchProductDetail = async () => {
