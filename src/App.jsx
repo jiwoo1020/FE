@@ -50,7 +50,7 @@ function App() {
             {/* 공동구매 생성 */}
             <Route path="/groupbuy/create" element={<GroupBuyCreate />} />
             {/* 공동구매 신청 */}
-            <Route path="/groupbuy/regi" element={<GroupBuyRegi />} />
+            <Route path="/groupbuy/:id" element={<GroupBuyRegi />} />
 
             {/* ######### 5 #########*/}
             {/* 캘린더 */}
