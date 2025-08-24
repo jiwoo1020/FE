@@ -1,23 +1,20 @@
-import { useState } from 'react'
 import Card from './Card'
 import styled from '@emotion/styled'
 
-export default function DeadlineCard() {
-  const [deadline, setDeadline] = useState('')
-
+export default function DeadlineCard({ value, onChange }) {
   const today = new Date()
   const minDate = new Date(today)
   minDate.setDate(today.getDate() + 3)
-  const minDateStr = minDate.toISOString().split('T')[0]
+  const minDateStr = minDate.toISOString().slice(0, 16) // YYYY-MM-DDTHH:mm
 
   return (
     <Card>
       <SectionTitle>공동구매 마감일</SectionTitle>
       <DateRow>
         <DateInput
-          type="date"
-          value={deadline}
-          onChange={e => setDeadline(e.target.value)}
+          type="datetime-local"
+          value={value}
+          onChange={e => onChange(e.target.value)}
           min={minDateStr}
         />
       </DateRow>

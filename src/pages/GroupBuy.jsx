@@ -1,70 +1,83 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from '@emotion/styled'
-import { FaArrowLeftLong } from 'react-icons/fa6'
-import { IoSearchOutline } from 'react-icons/io5'
 import GroupList from '../components/groupbuy/List'
 import MainHeader from '../components/nav/Header'
 import PeonyImg from '../assets/peony.svg'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import axios from 'axios'
 
 export default function GroupBuy() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const [groupList, setGroupList] = useState([])
+
+  useEffect(() => {
+    const fetchGroupBuys = async () => {
+      try {
+        const token = localStorage.getItem('token')
+
+        const response = await axios.get('/api/group-purchases', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+
+        let list = response.data?.content ?? []
+        const appliedList = JSON.parse(
+          localStorage.getItem('appliedList') || '[]'
+        )
+
+        // 해당 아이템에 joined: true 붙이기
+        list = list.map(item =>
+          appliedList.includes(item.id) ? { ...item, joined: true } : item
+        )
+
+        setGroupList(list)
+      } catch (error) {
+        console.error('조회 중 오류:', error)
+        alert('조회 중 오류가 발생했습니다.')
+      }
+    }
+
+    fetchGroupBuys()
+  }, [location.state?.appliedId])
+
+  // const handleApply = id => {
+  //   setGroupList(prev =>
+  //     prev.map(item => (item.id === id ? { ...item, joined: true } : item))
+  //   )
+  // }
   return (
-    <>
-      <Container>
-        <MainHeader />
-        <Row>
-          <Title>공동구매 리스트</Title>
-          <GroupBuyButton onClick={() => navigate('/groupbuy/create')}>
-            + 공동구매
-          </GroupBuyButton>
-        </Row>
+    <Container>
+      <MainHeader />
+      <Row>
+        <Title>공동구매 리스트</Title>
+        <GroupBuyButton onClick={() => navigate('/groupbuy/create')}>
+          + 공동구매
+        </GroupBuyButton>
+      </Row>
 
-        <GroupList
-          imageSrc={PeonyImg}
-          representative="홍*동"
-          address="경기도 용인시 처인구 모현읍 외대로 81"
-          currentCount={3}
-          maxCount={6}
-          storeName="멋사네 가게"
-          deliveryDate="2025년 8월 16일 오전 10시"
-          onApply={() => navigate('/groupbuy/regi')}
-        />
-
-        <GroupList
-          imageSrc={PeonyImg}
-          representative="홍*동"
-          address="경기도 용인시 처인구 모현읍 외대로 81"
-          currentCount={3}
-          maxCount={6}
-          storeName="멋사네 가게"
-          deliveryDate="2025년 8월 16일 오전 10시"
-          onApply={() => navigate('/groupbuy/regi')}
-        />
-
-        <GroupList
-          imageSrc={PeonyImg}
-          representative="홍*동"
-          address="경기도 용인시 처인구 모현읍 외대로 81"
-          currentCount={3}
-          maxCount={6}
-          storeName="멋사네 가게"
-          deliveryDate="2025년 8월 16일 오전 10시"
-          onApply={() => navigate('/groupbuy/regi')}
-        />
-
-        <GroupList
-          imageSrc={PeonyImg}
-          representative="홍*동"
-          address="경기도 용인시 처인구 모현읍 외대로 81"
-          currentCount={3}
-          maxCount={6}
-          storeName="멋사네 가게"
-          deliveryDate="2025년 8월 16일 오전 10시"
-          onApply={() => navigate('/groupbuy/regi')}
-        />
-      </Container>
-    </>
+      {groupList.length === 0 ? (
+        <EmptyText>현재 진행 중인 공동구매가 없습니다.</EmptyText>
+      ) : (
+        groupList.map((item, idx) => (
+          <GroupList
+            key={item.id ?? idx}
+            imageSrc={item.imageUrl || PeonyImg}
+            leader={item.leaderMaskedName}
+            address={item.address}
+            currentCount={item.currentParticipants}
+            maxCount={item.maxParticipants}
+            shopName={item.farmName}
+            price={item.priceText}
+            deliveryDate={item.deliveryAtText}
+            applied={item.joined}
+            onApply={() => navigate(`/groupbuy/${item.id}`)}
+          />
+        ))
+      )}
+    </Container>
   )
 }
 
@@ -75,8 +88,6 @@ const Container = styled.div`
   max-width: 393px; /* 모바일 최대 폭 */
   margin: 0 auto;
   background: #ffffff;
-  min-height: 100vh;
-  height: auto;
   overflow-y: auto;
 `
 
@@ -91,15 +102,11 @@ const Row = styled.div`
 `
 
 const GroupBuyButton = styled.button`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
   position: absolute;
+  right: 10px;
+  margin: 15px auto 0 auto;
   width: 137px;
   height: 37px;
-  left: 238px;
-  margin: 15px auto 0 auto;
   border-radius: 10px;
   border: none;
   font-size: 18px;
@@ -107,10 +114,18 @@ const GroupBuyButton = styled.button`
   color: #fff;
   background-color: #1f3906;
 `
+
 const Title = styled.h1`
   color: #000;
   font-size: 18px;
   font-weight: 600;
   letter-spacing: -0.96px;
   margin-left: 17px;
+`
+
+const EmptyText = styled.div`
+  margin: 20px;
+  text-align: center;
+  color: #777;
+  font-size: 14px;
 `
