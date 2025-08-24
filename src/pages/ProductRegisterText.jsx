@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from '@emotion/styled'
-import { FaArrowLeftLong } from 'react-icons/fa6'
 import MainHeader from '../components/nav/Header'
+import { useLocation } from 'react-router-dom'
 
 const Container = styled.div`
   position: relative;
@@ -116,6 +116,55 @@ const NextButton = styled.div`
 
 export default function ProductRegisterText() {
   const navigate = useNavigate()
+  const [name, setName] = useState('')
+  const [price, setPrice] = useState('')
+  const [stockQuantity, setStockQuantity] = useState('')
+  const [info, setInfo] = useState('')
+
+
+
+  // ❗ 수정할 부분: 상품 등록 API 호출
+const handleSubmit = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      alert('로그인이 필요합니다.')
+      return
+    }
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/product`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        name,
+        price: parseInt(price, 10),
+        stockQuantity: parseInt(stockQuantity, 10),
+        info,
+        // categoryId는 선택값
+      }),
+    })
+
+    if (!res.ok) {
+      console.error('상품 등록 실패:', res.status)
+      alert('상품 등록에 실패했습니다.')
+      return
+    }
+
+    const result = await res.json()
+    console.log('✅ 상품 등록 성공:', result)
+
+    // 👉 상품 등록 성공 시 productId를 이미지 업로드 페이지로 전달
+    navigate('/product/register/image', { state: { productId: result.data.product.id } })
+  } catch (err) {
+    console.error('❌ 상품 등록 에러:', err)
+    alert('서버 오류로 등록에 실패했습니다.')
+  }
+}
+
 
   return (
     <Container>
@@ -160,7 +209,8 @@ export default function ProductRegisterText() {
             >
               품종
             </p>
-            <SpeciesInput placeholder="ex) 장미" maxLength={200} />
+            <SpeciesInput placeholder="ex) 장미" maxLength={200} value={name}
+  onChange={e => setName(e.target.value)}/>
           </Species>
 
           <Price>
@@ -172,7 +222,11 @@ export default function ProductRegisterText() {
             >
               가격
             </p>
-            <PriceInput placeholder="한 송이의 가격을 알려주세요" />
+            <PriceInput
+  placeholder="한 송이의 가격을 알려주세요"
+  value={price}
+  onChange={e => setPrice(e.target.value)}
+/>
           </Price>
 
           <Stock>
@@ -184,7 +238,11 @@ export default function ProductRegisterText() {
             >
               재고
             </p>
-            <StockInput placeholder="판매 가능한 수량을 알려주세요" />
+            <StockInput
+  placeholder="판매 가능한 수량을 알려주세요"
+  value={stockQuantity}
+  onChange={e => setStockQuantity(e.target.value)}
+/>
           </Stock>
 
           <Feature>
@@ -197,9 +255,11 @@ export default function ProductRegisterText() {
               특징
             </p>
             <FeatureInput
-              placeholder="ex) 색이 예뻐 연인에게 선물하기 좋아요"
-              maxLength={200}
-            />
+  placeholder="ex) 색이 예뻐 연인에게 선물하기 좋아요"
+  maxLength={200}
+  value={info}
+  onChange={e => setInfo(e.target.value)}
+/>
           </Feature>
           <p
             style={{
@@ -213,7 +273,7 @@ export default function ProductRegisterText() {
             (200자)
           </p>
         </RegisterTextBox>
-        <NextButton onClick={() => navigate('/product/register/image')}>
+        <NextButton onClick={handleSubmit}>
           다음 단계
         </NextButton>
       </MainContainer>
