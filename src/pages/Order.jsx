@@ -49,7 +49,7 @@ export default function Order() {
 
         // 2. 주문 미리보기 호출
         const res = await axios.post(
-          '/api/orders/preview',
+          `${import.meta.env.VITE_API_URL}/api/orders/preview`,
           {
             cart_item_ids: cartIds,
             desired_delivery_date: pickedDate
@@ -92,7 +92,7 @@ export default function Order() {
     try {
       const token = localStorage.getItem('token')
       const res = await axios.post(
-        '/api/orders',
+        `${import.meta.env.VITE_API_URL}/api/orders`,
         {
           cart_item_ids: cartIds,
           desired_delivery_date: pickedDate
