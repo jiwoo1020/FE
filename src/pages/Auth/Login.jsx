@@ -38,14 +38,17 @@ export default function Login() {
 
   const onSubmit = async values => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify(values),
-      })
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(values),
+        }
+      )
 
       if (!response.ok) {
         console.error('로그인 실패:', response.status, response.statusText)
@@ -118,15 +121,12 @@ export default function Login() {
 const Container = styled.div`
   position: relative;
   width: 100%;
-  max-width: 430px;
-  height: 100vh;
+  min-height: 100vh;
+  max-width: 393px; /* 모바일 최대 폭 */
   margin: 0 auto;
-  overflow: hidden;
-  background: #fff;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  background: #ffffff;
+  overflow-y: auto;
 `
-
 const Card = styled.div`
   position: absolute;
   left: 50%;

@@ -85,12 +85,16 @@ export default function GroupBuyCreate() {
     try {
       const token = localStorage.getItem('token')
 
-      const response = await axios.post('/api/group-purchases', payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      })
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/group-purchases`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
 
       console.log('✅ 공동구매 생성 성공:', response.data)
       alert(

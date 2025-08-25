@@ -16,12 +16,15 @@ export default function GroupBuy() {
       try {
         const token = localStorage.getItem('token')
 
-        const response = await axios.get('/api/group-purchases', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        })
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/group-purchases`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        )
 
         let list = response.data?.content ?? []
         const appliedList = JSON.parse(

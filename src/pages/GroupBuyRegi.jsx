@@ -17,7 +17,7 @@ export default function GroupBuyRegi() {
       try {
         const token = localStorage.getItem('token')
         const response = await axios.get(
-          `/api/group-purchases/${id}`,
+          `${import.meta.env.VITE_API_URL}/api/group-purchases/${id}`,
 
           {
             headers: {
