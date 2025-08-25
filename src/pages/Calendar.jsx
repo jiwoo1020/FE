@@ -216,6 +216,7 @@ const EventContainer = styled.div`
   flex-direction: column;
   gap: 18px;
   margin-top: 10px;
+  margin-bottom: 15px;
 `
 
 const EventInfoContainer = styled.div`
