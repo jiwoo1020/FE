@@ -38,9 +38,12 @@ export default function Order() {
         const token = localStorage.getItem('token')
 
         // 1. 장바구니 가져오기
-        const cartRes = await axios.get('/api/cart/items', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const cartRes = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/cart/items`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        )
         const cartItems = cartRes.data?.data?.items ?? []
         const cartIds = cartItems.map(item => item.cart_item_id)
 

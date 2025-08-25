@@ -203,7 +203,7 @@ export default function ProductCart() {
 
       await Promise.all(
         selectedIds.map(id =>
-          axios.delete(`/api/cart/items/${id}`, {
+          axios.delete(`${import.meta.env.VITE_API_URL}/api/cart/items/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         )

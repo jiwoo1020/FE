@@ -85,9 +85,13 @@ export default function Signup() {
   const onSubmit = async data => {
     try {
       console.log('회원가입 요청 payload:', data)
-      const res = await axios.post('/api/user/signup', data, {
-        headers: { 'Content-Type': 'application/json' },
-      })
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/user/signup`,
+        data,
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      )
 
       if (res.status === 200 || res.status === 201) {
         alert('회원가입 성공!')
@@ -238,13 +242,11 @@ export default function Signup() {
 const Container = styled.div`
   position: relative;
   width: 100%;
-  max-width: 430px;
-  height: 100vh;
+  min-height: 100vh;
+  max-width: 393px; /* 모바일 최대 폭 */
   margin: 0 auto;
-  overflow: hidden;
-  background: #fff;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  background: #ffffff;
+  overflow-y: auto;
 `
 
 const Card = styled.div`

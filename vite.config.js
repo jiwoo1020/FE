@@ -40,14 +40,14 @@ export default defineConfig({
     }),
   ],
   server: {
-    https: false,
-    proxy: {
-      '/api': {
-        target: 'http://3.106.186.230:8081', // 백엔드 HTTP
-        changeOrigin: true,
-        secure: false,
-      },
-    },
+    https: true,
+    // proxy: {
+    //   '/api': {
+    //     target: 'https://pium.lion.it.kr', // 백엔드 HTTP
+    //     changeOrigin: true,
+    //     secure: false,
+    //   },
+    // },
   },
   resolve: {
     alias: {
