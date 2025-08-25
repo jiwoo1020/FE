@@ -33,15 +33,18 @@ export default function GroupBuyCreate() {
     store: '멋사네 가게',
     image: PeonyImg, // import 해둔 이미지 사용
   }
-  const [selected, setSelected] = useState(product ?? dummyProduct)
+  const [selected, setSelected] = useState(product ?? null)
   useEffect(() => {
     if (product) setSelected(product)
   }, [product])
 
   const goToProductList = () => {
     navigate('/product', { state: { from: '/groupbuy/create' } })
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/api/product`)
+      .then(res => console.log(res.data))
+      .catch(err => console.error(err))
   }
-
   function formatDateTimeLocal(dateStr) {
     if (!dateStr) return null
     const d = new Date(dateStr)
@@ -101,9 +104,8 @@ export default function GroupBuyCreate() {
       )
 
       console.log('✅ 공동구매 생성 성공:', response.data)
-      alert(
-        `공동구매 방이 생성되었습니다! (ID: ${response.data.data.group_id})`
-      )
+      alert(`공동구매 방이 생성되었습니다!`)
+      navigate('/groupbuy')
     } catch (err) {
       if (err.response) {
         console.error('❌ 공동구매 생성 실패:', err.response.data)

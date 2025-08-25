@@ -35,7 +35,7 @@ export default function Home() {
         })
         if (!res.ok) return
         const resData = await res.json()
-        setProducts(resData.content || [])
+        setProducts(resData.data?.items || [])
       } catch (err) {
         console.error('상품 불러오기 실패:', err)
       }

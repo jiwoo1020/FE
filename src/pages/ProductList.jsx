@@ -238,13 +238,17 @@ export default function ProductList() {
     const product = {
       productId: p.id,
       name: p.name,
-      store: p.info ?? p.store, // 백엔드 필드에 맞게 조정
+      store: p.info ?? p.store, // 백엔드 필드에 따라 유연하게 처리
       image: p.image_url,
     }
-    if (location.state?.from) {
-      navigate(location.state.from, { state: { product } })
+
+    const from = location.state?.from
+    // GroupBuyCreate에서 넘어온 경우 → 다시 돌아가기
+    if (from) {
+      navigate(from, { state: { product } })
     } else {
-      navigate(`/product/${p.id}`)
+      // 직접 접근했을 경우 → 상품 상세 페이지로
+      navigate(`/product/${p.id}`, { state: { product } })
     }
   }
   const filtered = useMemo(() => {
