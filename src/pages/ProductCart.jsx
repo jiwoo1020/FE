@@ -8,6 +8,7 @@ import Box from '../components/ProductCart/Box'
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { useLocation } from 'react-router-dom'
 
 const Container = styled.div`
   position: relative;
@@ -99,6 +100,7 @@ const PButton = styled.div`
 
 export default function ProductCart() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [items, setItems] = useState([])
   const selectAllRef = useRef(null)
 
@@ -111,16 +113,20 @@ export default function ProductCart() {
           headers: { Authorization: `Bearer ${token}` },
         })
 
-        const list = res.data.data.items.map(ci => ({
-          id: ci.cart_item_id,
-          title: ci.name,
-          price: ci.unit_price,
-          qty: ci.quantity,
-          selected: false,
-          img: ci.image_url,
-          seller: ci.seller?.shop_name,
-          spec: ci.spec,
-        }))
+        const list =
+          res.data?.data?.items?.map(ci => ({
+            id: ci.cart_item_id,
+            title: ci.name,
+            price: ci.unit_price,
+            qty: ci.quantity,
+            selected: false,
+            img: ci.image_url,
+            seller: ci.seller?.shop_name,
+            spec: ci.spec,
+          })) || []
+        if (location.state?.addedItem) {
+          list = [...list, location.state.addedItem] // ⭕ 가능
+        }
 
         setItems(list)
       } catch (err) {
@@ -128,7 +134,7 @@ export default function ProductCart() {
       }
     }
     fetchCart()
-  }, [])
+  }, [location.state])
 
   // 2. 선택/전체선택
   const toggleSelect = (id, checked) =>
@@ -203,13 +209,13 @@ export default function ProductCart() {
 
       await Promise.all(
         selectedIds.map(id =>
-          axios.delete(`${import.meta.env.VITE_API_URL}/api/cart/items/${id}`, {
+          axios.delete(`/api/cart/items/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         )
       )
 
-      setItems(prev => prev.filter(it => it.id !== res.data.data.cart_item_id))
+      setItems(prev => prev.filter(it => !selectedIds.includes(it.id)))
     } catch (err) {
       console.error('선택 항목 삭제 실패:', err)
       alert('선택 항목 삭제에 실패했습니다.')
@@ -257,13 +263,14 @@ export default function ProductCart() {
           <Box
             key={item.id}
             item={item}
-            onToggle={checked => toggleSelect(item.id, checked)}
+            onToggle={(id, checked) => toggleSelect(id, checked)}
             onInc={() => incQty(item.id)}
             onDec={() => decQty(item.id)}
-            onRemove={() => removeOne(item.id)}
+            onRemove={removeOne} // Box에서 item.id 넣어주니까 그대로 함수만 넘기면 됨
           />
         ))}
       </Body>
+
       <PButton onClick={handleOrder}> 선택 상품 결제하기 </PButton>
     </Container>
   )

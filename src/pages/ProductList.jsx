@@ -7,6 +7,7 @@ import MainHeader from '../components/nav/Header'
 import Search from '../assets/search.svg'
 import { useNavigate } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 const Container = styled.div`
   position: relative;
   width: 100%;
@@ -153,13 +154,14 @@ const Group = styled.div`
   margin: 10px 8px 11px 8px;
   height: 153px;
 `
-const PictureBox = styled.div`
+const PictureBox = styled.img`
   width: 100px;
   height: 115px;
   flex-shrink: 0;
   border-radius: 24px;
   border: 1px solid rgba(0, 0, 0, 0.49);
-  background: url(<path-to-image>) lightgray 50% / cover no-repeat;
+  object-fit: cover;
+  /* background: url(<path-to-image>) lightgray 50% / cover no-repeat; */
 `
 const ProductTextBox = styled.div`
   display: flex;
@@ -215,6 +217,7 @@ const CHIPS = ['조회순', '카테고리', '가격', '종류', '색상']
 
 export default function ProductList() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
   const [activeChip, setActiveChip] = useState(null)
   const [list, setList] = useState([]) // 상품 목록 상태
@@ -231,6 +234,19 @@ export default function ProductList() {
     category: null,
     price: [10000, 50000],
   })
+  const handleSelect = p => {
+    const product = {
+      productId: p.id,
+      name: p.name,
+      store: p.info ?? p.store, // 백엔드 필드에 맞게 조정
+      image: p.image_url,
+    }
+    if (location.state?.from) {
+      navigate(location.state.from, { state: { product } })
+    } else {
+      navigate(`/product/${p.id}`)
+    }
+  }
   const filtered = useMemo(() => {
     return products.filter(p => {
       // 가격 필터
@@ -280,7 +296,7 @@ export default function ProductList() {
         console.log('상품 목록 응답:', resData)
 
         // ✅ DB 상품 목록 반영
-        setProducts(resData.content || [])
+        setProducts(resData.data?.items || [])
         console.log('상품 목록 응답:', resData)
       } catch (err) {
         console.error('네트워크 오류:', err)
@@ -365,14 +381,13 @@ export default function ProductList() {
         </SearchFrame>
         <ProductFrame>
           <ProductContainer>
-            {products.map((p, index) => (
-              <ProductBox
-                key={`${p.product_id}-${index}`}
-                onClick={() => ProductHandleClick(p.id)}
-              >
+            {products.map(p => (
+              <ProductBox key={p.id} onClick={() => handleSelect(p)}>
                 <Group>
+                  {/* PictureBox는 styled.div라 src/alt 적용이 안됨 → styled.img로 교체 필요 */}
                   <PictureBox
-                    src={p.image_url || null}
+                    as="img"
+                    src={p.image_url || '/placeholder.png'}
                     alt={p.name || '상품 이미지'}
                   />
                   <ProductTextBox>
@@ -384,7 +399,7 @@ export default function ProductList() {
 
                     <TextLine>
                       <Name>{p.name}</Name>
-                      <Store>{p.category?.name}</Store>
+                      <Store>{p.info}</Store>
                     </TextLine>
                   </ProductTextBox>
                 </Group>

@@ -2,6 +2,8 @@
 import styled from '@emotion/styled'
 import { AiOutlineClose } from 'react-icons/ai'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
 const Backdrop = styled.div`
   position: fixed;
   inset: 0;
@@ -66,7 +68,7 @@ const FOptionBox = styled.div`
   width: 331px;
   margin-left: 31px;
 `
-const Number = styled.div`
+const NumberText = styled.div`
   color: #808080;
   font-family: Pretendard;
   font-size: 12px;
@@ -199,9 +201,10 @@ const PurchaseButton = styled.div`
   font-weight: 600;
   line-height: normal;
 `
-export default function BuySheet({ onClose }) {
+export default function BuySheet({ onClose, product }) {
   const [selected, setSelected] = useState(null)
   const [custom, setCustom] = useState('')
+  const navigate = useNavigate()
 
   const pick = v => {
     setSelected(v)
@@ -212,6 +215,24 @@ export default function BuySheet({ onClose }) {
     const v = e.target.value.replace(/[^\d]/g, '')
     setCustom(v)
     if (selected !== 'custom') setSelected('custom')
+  }
+
+  const handlePurchase = () => {
+    const finalQty = selected === 'custom' ? Number(custom) : Number(selected)
+
+    if (!finalQty || finalQty <= 0) {
+      alert('수량을 선택하거나 입력하세요.')
+      return
+    }
+
+    navigate('/order', {
+      state: {
+        product: {
+          ...product, // 부모에서 넘겨준 상품 정보 (id, name, price, img 등)
+          quantity: finalQty,
+        },
+      },
+    })
   }
 
   return (
@@ -226,7 +247,7 @@ export default function BuySheet({ onClose }) {
         </TitleLine>
         <OptionContainer>
           <FOptionBox>
-            <Number>개수 선택하기</Number>
+            <NumberText>개수 선택하기</NumberText>
           </FOptionBox>
           <SOptionBox onClick={() => pick('5')}>
             <FiveLine>
@@ -273,7 +294,7 @@ export default function BuySheet({ onClose }) {
             </Line>
           </LOptionBox>
         </OptionContainer>
-        <PurchaseButton>결제하기</PurchaseButton>
+        <PurchaseButton onClick={handlePurchase}>결제하기</PurchaseButton>
       </Sheet>
     </Backdrop>
   )

@@ -1,5 +1,5 @@
 /** @jsxImportSource @emotion/react */
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from '@emotion/styled'
 import MainHeader from '../components/nav/Header'
 import PeonyImg from '../assets/peony.svg'
@@ -34,8 +34,12 @@ export default function GroupBuyCreate() {
     image: PeonyImg, // import 해둔 이미지 사용
   }
   const [selected, setSelected] = useState(product ?? dummyProduct)
+  useEffect(() => {
+    if (product) setSelected(product)
+  }, [product])
+
   const goToProductList = () => {
-    navigate('/product') // 실제 ProductList 라우트 경로로 수정
+    navigate('/product', { state: { from: '/groupbuy/create' } })
   }
 
   function formatDateTimeLocal(dateStr) {
