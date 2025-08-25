@@ -305,26 +305,28 @@ export default function BuySheet({ productId, onClose }) {
             </SOptionBox>
           ))}
           {/* 🔹 직접 입력 */}
-          <Line>
-            <Self>
-              <SelfText as="label" htmlFor="qCustom">
-                직접 입력하기
-              </SelfText>
-              <PutBox
-                id="qCustom"
-                type="number"
-                inputMode="numeric"
-                placeholder={options?.unit_label || '송이'}
-                value={custom}
-                onChange={e => setCustom(e.target.value)}
-                onFocus={() => setSelected('custom')}
-              />
-            </Self>
-            <Left>
-              남은 수량: {options?.stock_remaining}
-              {options?.unit_label}
-            </Left>
-          </Line>
+          <LOptionBox>
+            <Line>
+              <Self>
+                <SelfText as="label" htmlFor="qCustom">
+                  직접 입력하기
+                </SelfText>
+                <PutBox
+                  id="qCustom"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder={options?.unit_label || '송이'}
+                  value={custom}
+                  onChange={e => setCustom(e.target.value)}
+                  onFocus={() => setSelected('custom')}
+                />
+              </Self>
+              <Left>
+                남은 수량: {options?.stock_remaining}
+                {options?.unit_label}
+              </Left>
+            </Line>
+          </LOptionBox>
         </OptionContainer>
         <PurchaseButton onClick={handlePurchase}>결제하기</PurchaseButton>
       </Sheet>
