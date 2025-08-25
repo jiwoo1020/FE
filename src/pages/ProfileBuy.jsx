@@ -163,22 +163,23 @@ const Delivery = styled.div`
 export default function ProfileBuy() {
 
   const navigate = useNavigate()
+  const [loading, setLoading] = useState(false) 
+  const [error, setError] = useState(null)
 
   const [userData, setUserData] = useState(null)
 
   useEffect(() => {
     const fetchUserData = async () => {
+      setLoading(true)
+      setError(null)
       try {
-        const rawToken = localStorage.getItem('token');
+        const rawToken = localStorage.getItem('token')
         if (!rawToken) {
-          console.warn("🔑 토큰이 없습니다.");
-          return;
+          console.warn("🔑 토큰이 없습니다.")
+          return
         }
   
-        const token = rawToken.startsWith('Bearer') ? rawToken : `Bearer ${rawToken}`;
-        console.log("📦 최종 Authorization 헤더:", token);
-        console.log("🌐 API URL:", import.meta.env.VITE_API_URL);
-  
+        const token = rawToken.startsWith('Bearer') ? rawToken : `Bearer ${rawToken}`
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/me`, {
           method: 'GET',
           headers: {
@@ -186,24 +187,26 @@ export default function ProfileBuy() {
             'Content-Type': 'application/json',
             'Authorization': token,
           },
-          // credentials: 'omit', // 대부분 불필요하므로 지움
-        });
+        })
   
         if (!res.ok) {
-          console.error("❌ 응답 실패:", res.status, res.statusText);
-          throw new Error('응답 실패');
+          throw new Error(`HTTP ${res.status}`)
         }
   
-        const data = await res.json();
-        console.log('✅ 유저 정보 불러오기 성공:', data);
-        setUserData(data.data);
+        const data = await res.json()
+        console.log('✅ 유저 정보 불러오기 성공:', data)
+        setUserData(data.data)
       } catch (err) {
-        console.error('❌ 유저 정보 불러오기 실패', err);
+        console.error('❌ 유저 정보 불러오기 실패', err)
+        setError(err.message)
+      } finally {
+        setLoading(false)
       }
-    };
+    }
   
-    fetchUserData();
-  }, []);
+    fetchUserData()
+  }, [])
+  
   
   
   
@@ -255,56 +258,106 @@ export default function ProfileBuy() {
       id={userData?.username}
       phone={userData?.phoneNumber}
       />
-      <MyGroupBuyList>나의 공동구매 현황</MyGroupBuyList>
+     <MyGroupBuyList>나의 공동구매 현황</MyGroupBuyList>
+     {loading ? (
+        <div style={{ fontSize: 14 }}>불러오는 중...</div>
+      ) : error ? (
+        <div style={{ fontSize: 14, color: 'crimson' }}>불러오기 실패: {error}</div>
+      ) : userData?.groupPurchases?.length > 0 ? (
+        userData.groupPurchases.map(/* ... */)
+      ) : (
+        <div style={{ fontSize: 12, color: '#666' }}>참여한 공동구매가 없습니다.</div>
+      )}
+
       <GroupBuyContainer>
-        {mockGroupBuys.map((item) => (
-          <GroupBuyItem key={item.id}>
-            <GroupBuyHeader>
-              <ProductImg src={item.img} alt={`${item.flowerName} 이미지`}  />
-              <GroupBuyInfo>
-                <State>
-                  <Dot />
-                  <StateText>구매자 입금 중</StateText>
-                </State>
-                <StoreName>멋사네 가게</StoreName>
-                <FlowerName>
-                  작약
-                  <span
-                    style={{
-                      color: '#979797',
-                      fontSize: '12px',
-                      marginLeft: '5px',
-                    }}
-                  >
-                    3송이
-                  </span>
-                </FlowerName>
-              </GroupBuyInfo>
-              <span
-                style={{
-                  fontSize: '12px',
-                  marginLeft: '120px',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                }}
-                onClick={() => navigate('/groupbuy/regi')}
-              >
-                상세정보 &gt;
-              </span>
-              <MoveIcon />
-            </GroupBuyHeader>
-            <Line />
-            <PriceContainer>
-              <SellingPriceTitle>예상 결제 금액</SellingPriceTitle>
-              <SellingPrice>9000원 + 배달료</SellingPrice>
-            </PriceContainer>
-            <DeliveryContainer>
-              <DeliveryTitle>입금 계좌</DeliveryTitle>
-              <Delivery>국민 111111111111</Delivery>
-            </DeliveryContainer> 
-        </GroupBuyItem>
+      {userData?.orders?.length > 0 &&
+  userData.orders.map(item => (
+            <GroupBuyItem key={item.id}>
+              <GroupBuyHeader>
+                <ProductImg src={item.imageUrl || Flower} alt="상품 이미지" />
+                <GroupBuyInfo>
+                  <State>
+                    <Dot />
+                    <StateText>{item.state || '진행중'}</StateText>
+                  </State>
+                  <StoreName>{userData.shop?.name}</StoreName>
+                  <FlowerName>
+                    {item.productName}
+                    <span style={{ color: '#979797', fontSize: '12px', marginLeft: '5px' }}>
+                      {item.quantity}송이
+                    </span>
+                  </FlowerName>
+                </GroupBuyInfo>
+              </GroupBuyHeader>
+              <Line />
+              <PriceContainer>
+                <SellingPriceTitle>예상 결제 금액</SellingPriceTitle>
+                <SellingPrice>{item.price ?? '-'} 원</SellingPrice>
+              </PriceContainer>
+              <DeliveryContainer>
+                <DeliveryTitle>입금 계좌</DeliveryTitle>
+                <Delivery>
+                  {userData.shop?.depositAccount?.bank} {userData.shop?.depositAccount?.number}
+                </Delivery>
+              </DeliveryContainer>
+            </GroupBuyItem>
         ))}
       </GroupBuyContainer>
+
+      <MyGroupBuyList>나의 구매 내역</MyGroupBuyList>
+      {loading ? (
+        <div style={{ fontSize: 14 }}>불러오는 중...</div>
+      ) : error ? (
+        <div style={{ fontSize: 14, color: 'crimson' }}>불러오기 실패: {error}</div>
+      ) : userData?.groupPurchases?.length > 0 ? (
+        userData.groupPurchases.map(/* ... */)
+      ) : (
+        <div style={{ fontSize: 12, color: '#666' }}>구매 내역이 없습니다.</div>
+      )}
+
+
+        <GroupBuyContainer>
+        {userData?.orders?.length > 0 &&
+  userData.orders.map(item => (
+              <GroupBuyItem key={item.id}>
+                <GroupBuyHeader>
+                  <ProductImg src={item.imageUrl || Flower} alt="상품 이미지" />
+                  <GroupBuyInfo>
+                    <State>
+                      <Dot />
+                      <StateText>{item.state || '주문완료'}</StateText>
+                    </State>
+                    <StoreName>{item.shopName || userData.shop?.name}</StoreName>
+                    <FlowerName>
+                      {item.productName}
+                      <span
+                        style={{
+                          color: '#979797',
+                          fontSize: '12px',
+                          marginLeft: '5px',
+                        }}
+                      >
+                        {item.quantity}개
+                      </span>
+                    </FlowerName>
+                  </GroupBuyInfo>
+                </GroupBuyHeader>
+                <Line />
+                <PriceContainer>
+                  <SellingPriceTitle>결제 금액</SellingPriceTitle>
+                  <SellingPrice>
+                    {item.price ? `${item.price.toLocaleString()} 원` : '-'}
+                  </SellingPrice>
+                </PriceContainer>
+                <DeliveryContainer>
+                  <DeliveryTitle>배송지</DeliveryTitle>
+                  <Delivery>{item.address ?? '-'}</Delivery>
+                </DeliveryContainer>
+              </GroupBuyItem>
+      ))}
+        </GroupBuyContainer>
+        
+      
       </MainContainer>
       
     </Container>
