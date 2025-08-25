@@ -109,7 +109,7 @@ export default function ProductCart() {
     const fetchCart = async () => {
       try {
         const token = localStorage.getItem('token')
-        const res = await axios.get('/api/cart/items', {
+        const res = await axios.get('${import.meta.env.VITE_API_URL}/api/cart/items', {
           headers: { Authorization: `Bearer ${token}` },
         })
 
@@ -162,7 +162,7 @@ export default function ProductCart() {
     try {
       const token = localStorage.getItem('token')
       const res = await axios.patch(
-        `/api/cart/items/${id}`,
+        `${import.meta.env.VITE_API_URL}/api/cart/items/${id}`,
         { quantity: newQty },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -192,7 +192,7 @@ export default function ProductCart() {
   const removeOne = async id => {
     try {
       const token = localStorage.getItem('token')
-      await axios.delete(`/api/cart/items/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/cart/items/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       setItems(prev => prev.filter(it => it.id !== id))
@@ -209,7 +209,7 @@ export default function ProductCart() {
 
       await Promise.all(
         selectedIds.map(id =>
-          axios.delete(`/api/cart/items/${id}`, {
+          axios.delete(`${import.meta.env.VITE_API_URL}/api/cart/items/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         )
