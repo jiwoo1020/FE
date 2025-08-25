@@ -113,7 +113,7 @@ export default function ProductCart() {
           headers: { Authorization: `Bearer ${token}` },
         })
 
-        const list =
+        let list =
           res.data?.data?.items?.map(ci => ({
             id: ci.cart_item_id,
             title: ci.name,
