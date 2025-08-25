@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import { AiOutlineClose } from 'react-icons/ai'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
+import { useEffect } from 'react'
 const Backdrop = styled.div`
   position: fixed;
   inset: 0;
@@ -201,11 +201,11 @@ const PurchaseButton = styled.div`
   font-weight: 600;
   line-height: normal;
 `
-export default function BuySheet({ onClose, product }) {
+export default function BuySheet({ productId, onClose }) {
   const [selected, setSelected] = useState(null)
   const [custom, setCustom] = useState('')
   const navigate = useNavigate()
-
+  const [options, setOptions] = useState(null) // 옵션 데이터 저장
   const pick = v => {
     setSelected(v)
     if (v !== 'custom') setCustom('')
@@ -217,22 +217,63 @@ export default function BuySheet({ onClose, product }) {
     if (selected !== 'custom') setSelected('custom')
   }
 
-  const handlePurchase = () => {
-    const finalQty = selected === 'custom' ? Number(custom) : Number(selected)
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/product/${productId}/options`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
 
-    if (!finalQty || finalQty <= 0) {
+        if (!res.ok) throw new Error('옵션 조회 실패')
+        const data = await res.json()
+        console.log('옵션 데이터:', data)
+        setOptions(data.data) // ✅ Swagger 응답에서 "data" 안에 옵션 있음
+      } catch (err) {
+        console.error('옵션 불러오기 오류:', err)
+      }
+    }
+
+    if (productId) fetchOptions()
+  }, [productId])
+
+  const handlePurchase = () => {
+    const quantity = selected === 'custom' ? Number(custom) : Number(selected)
+
+    if (!quantity || quantity <= 0) {
       alert('수량을 선택하거나 입력하세요.')
       return
     }
 
+    // 최종 주문 데이터
+    const orderData = {
+      product_id: productId,
+      quantity,
+      unit_price: options?.unit_price, // ✅ data 대신 options 사용
+    }
+
+    console.log('최종 주문 요청:', orderData)
+
+    // 주문 페이지로 이동
     navigate('/order', {
       state: {
         product: {
-          ...product, // 부모에서 넘겨준 상품 정보 (id, name, price, img 등)
-          quantity: finalQty,
+          id: productId,
+          quantity,
+          unit_price: options?.unit_price,
+          unit_label: options?.unit_label,
         },
       },
     })
+
+    onClose() // 시트 닫기
   }
 
   return (
@@ -249,50 +290,41 @@ export default function BuySheet({ onClose, product }) {
           <FOptionBox>
             <NumberText>개수 선택하기</NumberText>
           </FOptionBox>
-          <SOptionBox onClick={() => pick('5')}>
-            <FiveLine>
-              <Circle
-                id="q5"
-                type="radio"
-                name="quantity"
-                checked={selected === '5'}
-                onChange={() => pick('5')}
-              />
-              <Five>5 송이</Five>
-            </FiveLine>
-          </SOptionBox>
-          <SOptionBox onClick={() => pick('10')}>
-            <FiveLine>
-              <Circle
-                id="q10"
-                type="radio"
-                name="quantity"
-                checked={selected === '10'}
-                onChange={() => pick('10')}
-              />
-              <Five>10 송이</Five>
-            </FiveLine>
-          </SOptionBox>
-          <LOptionBox>
-            <Line>
-              <Self>
-                <SelfText as="label" htmlFor="qCustom">
-                  직접 입력하기
-                </SelfText>
-
-                <PutBox
-                  id="qCustom"
-                  type="text" // 또는 number
-                  inputMode="numeric"
-                  placeholder="송이"
-                  value={custom}
-                  onChange={onCustomChange}
-                  onFocus={() => selected !== 'custom' && setSelected('custom')}
+          {options?.presets?.map(p => (
+            <SOptionBox key={p} onClick={() => pick(p)}>
+              <FiveLine>
+                <Circle
+                  id={`q${p}`}
+                  type="radio"
+                  name="quantity"
+                  checked={selected === String(p)}
+                  onChange={() => pick(p)}
                 />
-              </Self>
-              <Left>남은 수량: 12송이</Left>
-            </Line>
-          </LOptionBox>
+                <Five>{p} 송이</Five>
+              </FiveLine>
+            </SOptionBox>
+          ))}
+          {/* 🔹 직접 입력 */}
+          <Line>
+            <Self>
+              <SelfText as="label" htmlFor="qCustom">
+                직접 입력하기
+              </SelfText>
+              <PutBox
+                id="qCustom"
+                type="number"
+                inputMode="numeric"
+                placeholder={options?.unit_label || '송이'}
+                value={custom}
+                onChange={e => setCustom(e.target.value)}
+                onFocus={() => setSelected('custom')}
+              />
+            </Self>
+            <Left>
+              남은 수량: {options?.stock_remaining}
+              {options?.unit_label}
+            </Left>
+          </Line>
         </OptionContainer>
         <PurchaseButton onClick={handlePurchase}>결제하기</PurchaseButton>
       </Sheet>
