@@ -28,7 +28,7 @@ const ProfileSellModi = lazy(() => import('./pages/ProfileSellModi'))
 const ProfileBuy = lazy(() => import('./pages/ProfileBuy'))
 
 function App() {
-  const userType = localStorage.getItem('userType') || 'consumer'
+  const userType = (localStorage.getItem('role') || 'consumer').toLowerCase()
   return (
     <Router>
       <GlobalStyles />

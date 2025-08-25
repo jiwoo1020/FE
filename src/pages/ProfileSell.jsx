@@ -61,7 +61,7 @@ const ToggleButton = styled.div`
   background: #fff;
 `
 const ToggleLabel = styled.div`
-  color: #FFFEFE;
+  color: #fffefe;
   font-size: 8px;
 `
 const Grid = styled.div`
@@ -230,9 +230,9 @@ const FixInfo = styled.div`
 
 export default function ProfileSell() {
   const [products, setProducts] = useState([])
-  const [groupBuys, setGroupBuys] = useState([])         //공동구매 목록 상태
-  const [loading, setLoading] = useState(false) 
-  const [error, setError] = useState(null)         
+  const [groupBuys, setGroupBuys] = useState([]) //공동구매 목록 상태
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
   const navigate = useNavigate()
 
   const [showSoldOut, setShowSoldOut] = useState(false)
@@ -251,24 +251,29 @@ export default function ProfileSell() {
           console.warn('🔑 토큰이 없습니다.')
           return
         }
-  
-        const token = rawToken.startsWith('Bearer') ? rawToken : `Bearer ${rawToken}`
+
+        const token = rawToken.startsWith('Bearer')
+          ? rawToken
+          : `Bearer ${rawToken}`
         console.log('📦 최종 Authorization 헤더:', token)
         console.log('🌐 API URL:', import.meta.env.VITE_API_URL)
-  
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/group-purchases`, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            Authorization: token,
-          },
-        })
-  
+
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/group-purchases`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              Authorization: token,
+            },
+          }
+        )
+
         if (!res.ok) {
           console.error('❌ 응답 실패:', res.status, res.statusText)
           throw new Error('공동구매 목록 응답 실패')
         }
-  
+
         const data = await res.json()
         console.log('✅ 공동구매 목록 불러오기 성공:', data)
         setGroupBuys(Array.isArray(data?.content) ? data.content : [])
@@ -279,7 +284,7 @@ export default function ProfileSell() {
         setLoading(false)
       }
     }
-  
+
     setLoading(true)
     setError(null)
     fetchGroupPurchaseList()
@@ -289,21 +294,24 @@ export default function ProfileSell() {
       try {
         const rawToken = localStorage.getItem('token')
         if (!rawToken) throw new Error('NO_TOKEN')
-  
+
         const token = rawToken.startsWith('Bearer')
           ? rawToken
           : `Bearer ${rawToken}`
-  
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/seller/product`, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            Authorization: token,
-          },
-        })
-  
+
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/seller/product`,
+          {
+            method: 'GET',
+            headers: {
+              Accept: 'application/json',
+              Authorization: token,
+            },
+          }
+        )
+
         if (!res.ok) throw new Error(`HTTP_${res.status}`)
-  
+
         const json = await res.json()
         console.log('✅ 상품 목록 불러오기 성공:', json.data.items)
         setProducts(json.data.items)
@@ -311,11 +319,9 @@ export default function ProfileSell() {
         console.error('❌ 상품 목록 불러오기 실패:', err.message)
       }
     }
-  
+
     fetchProducts()
   }, [])
-  
-
 
   const STEP_ITEMS = [
     {
@@ -344,7 +350,7 @@ export default function ProfileSell() {
     <Container>
       <MainHeader />
       <MainContainer>
-        <Title>반갑습니다, 머쨍이님</Title>
+        <Title>반갑습니다, {localStorage.getItem('username')}</Title>
         <ManageProductHeader>
           <p
             style={{
@@ -357,25 +363,28 @@ export default function ProfileSell() {
           >
             나의 상품
           </p>
-          <Toggle onClick={() => setShowSoldOut(prev => !prev)} isSoldOut={showSoldOut}>
-          {showSoldOut ? (
-            <>
-              <ToggleButton isSoldOut={showSoldOut} />
-              <ToggleLabel
-                style={{
-                  position: 'relative',
-                  left: '5px',
-                }}
-              >
-                품절
-              </ToggleLabel>
-            </>
-          ) : (
-            <>
-              <ToggleLabel>판매 중</ToggleLabel>
-              <ToggleButton isSoldOut={showSoldOut} />
-            </>
-          )}
+          <Toggle
+            onClick={() => setShowSoldOut(prev => !prev)}
+            isSoldOut={showSoldOut}
+          >
+            {showSoldOut ? (
+              <>
+                <ToggleButton isSoldOut={showSoldOut} />
+                <ToggleLabel
+                  style={{
+                    position: 'relative',
+                    left: '5px',
+                  }}
+                >
+                  품절
+                </ToggleLabel>
+              </>
+            ) : (
+              <>
+                <ToggleLabel>판매 중</ToggleLabel>
+                <ToggleButton isSoldOut={showSoldOut} />
+              </>
+            )}
           </Toggle>
         </ManageProductHeader>
         <Grid>
@@ -392,7 +401,7 @@ export default function ProfileSell() {
               등록된 상품이 없습니다.
             </div>
           ) : (
-            products.map((product) => (
+            products.map(product => (
               <ProductCard
                 key={product.product_id}
                 onClick={() => navigate(`/product/${product.product_id}`)}
@@ -438,9 +447,15 @@ export default function ProfileSell() {
 
         <GroupBuyContainer>
           {groupBuys.map(item => (
-            <GroupBuyItem key={item.id} onClick={() => navigate(`/groupbuy/${item.id}`)}>
+            <GroupBuyItem
+              key={item.id}
+              onClick={() => navigate(`/groupbuy/${item.id}`)}
+            >
               <GroupBuyHeader>
-                <ProductImg src={item.imageUrl || Flower} alt="공동구매 이미지" />
+                <ProductImg
+                  src={item.imageUrl || Flower}
+                  alt="공동구매 이미지"
+                />
                 <GroupBuyInfo>
                   <State>
                     <Dot />
@@ -455,12 +470,21 @@ export default function ProfileSell() {
                         marginLeft: '0px',
                       }}
                     >
-                      {item.currentParticipants ?? 0}/{item.maxParticipants ?? 0} 명
+                      {item.currentParticipants ?? 0}/
+                      {item.maxParticipants ?? 0} 명
                     </span>
                   </FlowerName>
                 </GroupBuyInfo>
                 {/* 오른쪽: 상세정보 */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px',margin: 'auto 0', marginLeft: '100px'}}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    margin: 'auto 0',
+                    marginLeft: '100px',
+                  }}
+                >
                   <span
                     style={{
                       fontSize: '12px',

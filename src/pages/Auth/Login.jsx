@@ -62,8 +62,16 @@ export default function Login() {
       if (data.data?.accessToken) {
         localStorage.setItem('token', data.data.accessToken)
         localStorage.setItem('username', values.username)
-        // localStorage.setItem('userType', data.data?.userType)
-        navigate('/')
+
+        const role = data.data?.role?.toLowerCase()
+        localStorage.setItem('role', role)
+        if (role?.toLowerCase() === 'consumer') {
+          navigate('/profile/buy', { replace: true })
+        } else if (role?.toLowerCase() === 'seller') {
+          navigate('/profile/sell', { replace: true })
+        } else {
+          navigate('/', { replace: true }) // fallback
+        }
       } else {
         alert('로그인 실패: 토큰이 없습니다.')
       }

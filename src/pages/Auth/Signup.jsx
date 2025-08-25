@@ -96,7 +96,7 @@ export default function Signup() {
       if (res.status === 200 || res.status === 201) {
         alert('회원가입 성공!')
 
-        localStorage.setItem('userType', data.role)
+        localStorage.setItem('role', data.role)
 
         if (res.data.token) {
           localStorage.setItem('token', res.data.token)
