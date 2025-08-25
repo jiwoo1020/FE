@@ -249,7 +249,7 @@ const EventDescription = styled.div`
 `
 
 const DragHandle = styled.div`
-  width: 40px;
+  width: 80px;
   height: 4px;
   border-radius: 999px;
   background: #d9d9d9;

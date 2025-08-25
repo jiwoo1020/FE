@@ -7,8 +7,7 @@ import Right from '../assets/화살표_오른쪽.svg'
 import { useEffect, useState } from 'react'
 import BuySheet from '../components/ProductDetail/BuySheet'
 import Header from '../components/nav/Header'
-import { useNavigate } from 'react-router-dom'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 const Container = styled.div`
   position: relative;
   width: 100%;
@@ -322,21 +321,58 @@ const Gbox = styled.div`
   margin-top: -10px;
 `
 
-export default function ProductDetail({ value, onChange }) {
+export default function ProductDetail() {
   const { id } = useParams()
-  console.log('ProductDetail useParams id:', id)
   const [open, setOpen] = useState(false)
   const [activeId, setActiveId] = useState(null)
   const navigate = useNavigate()
-  const [name, setName] = useState('')
-  const [image_url, setImage_url] = useState(FlowerImg)
-  const [info, setInfo] = useState('')
-  const [price, setPrice] = useState('')
-  const [shop_name, setShop_name] = useState('')
-  const [products, setProducts] = useState([])
-  const handleClickShop = () => {
-    navigate('/product/cart') // 원하는 라우트로 이동
+  const [product, setProduct] = useState(null)
+
+  // ✅ 장바구니 담기
+  const handleClickShop = async () => {
+    if (!product) {
+      alert('상품 정보를 불러오는 중입니다. 잠시 후 다시 시도해주세요.')
+      return
+    }
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          product_id: product.id,
+          quantity: 1,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.message || '장바구니 담기 실패')
+      }
+      console.log('장바구니 추가 성공:', data)
+      navigate('/product/cart', {
+        state: {
+          addedItem: {
+            id: data.data.cart_item.cart_item_id,
+            title: product.name,
+            price: data.data.cart_item.unit_price,
+            qty: data.data.cart_item.quantity,
+            img: product.image_url,
+            seller: product.shop_name,
+            spec: product.info,
+          },
+        },
+      })
+    } catch (err) {
+      console.error('장바구니 추가 실패:', err)
+      alert('장바구니 담기에 실패했습니다.')
+    }
   }
+
+  // ✅ 상품 상세 불러오기
   useEffect(() => {
     if (id) {
       const fetchProductDetail = async () => {
@@ -361,18 +397,22 @@ export default function ProductDetail({ value, onChange }) {
             console.error('상품 상세 조회 실패:', errorData)
             return
           }
-          const resData = await res.json() // 전체 응답 데이터를 resData에 저장
-          const productData = resData.data.product // product 객체로 접근
 
-          setName(productData.name)
-          setInfo(productData.info)
-          setPrice(productData.price.toString())
-          setImage_url(productData.imageMainUrl) // ✅ 서버 응답과 맞춤
-          setShop_name(productData.shopName)
+          const resData = await res.json()
+          const productData = resData.data.product
+
+          setProduct({
+            id: productData.id,
+            name: productData.name,
+            info: productData.info,
+            price: productData.price,
+            image_url: productData.imageMainUrl || FlowerImg,
+            shop_name: productData.shopName,
+          })
 
           console.log('상품 상세 조회 성공:', productData)
         } catch (err) {
-          console.error(' 네트워크 오류:', err)
+          console.error('네트워크 오류:', err)
         }
       }
 
@@ -382,16 +422,16 @@ export default function ProductDetail({ value, onChange }) {
 
   return (
     <Container>
-      <Header></Header>
-      <img src={image_url} alt="상품 이미지" />
+      <Header />
+      <img src={product?.image_url} alt="상품 이미지" />
       <StoreContainer>
         <StoreBox>
           <img
             src={LionImg}
             alt="사자 이미지"
-            style={{ width: '30px', height: '30px', borderradius: '30px' }}
+            style={{ width: '30px', height: '30px', borderRadius: '30px' }}
           />
-          <Shopname>{shop_name}</Shopname>
+          <Shopname>{product?.shop_name}</Shopname>
           <img
             src={Right}
             alt="가게 바로가기"
@@ -400,10 +440,10 @@ export default function ProductDetail({ value, onChange }) {
         </StoreBox>
       </StoreContainer>
       <ContentContainer>
-        <ContentTitle> {name}</ContentTitle>
+        <ContentTitle>{product?.name}</ContentTitle>
         <ContentBox>
           <BoxTitle>상품 정보</BoxTitle>
-          <BoxDetail>{info}</BoxDetail>
+          <BoxDetail>{product?.info}</BoxDetail>
         </ContentBox>
         <AIContainer>
           <AITextBox>
@@ -413,15 +453,15 @@ export default function ProductDetail({ value, onChange }) {
                 style={{ cursor: 'pointer' }}
                 onClick={() => setOpen(!open)}
               />
-              <Rectengle></Rectengle>
-              <Circle></Circle>
-              <FreshText></FreshText>
+              <Rectengle />
+              <Circle />
+              <FreshText />
             </AITextLine>
             {open && (
               <div>
                 <ComplainBox>
                   <ComplainLine>
-                    <IoIosInformationCircleOutline></IoIosInformationCircleOutline>
+                    <IoIosInformationCircleOutline />
                     <ComplainText>
                       생산자가 꽃을 업로드하면, AI가 꽃잎·줄기·색상 등 시각적
                       요소를 분석하여 신선도 등급을 자동 분류
@@ -439,23 +479,26 @@ export default function ProductDetail({ value, onChange }) {
               <Red>판매 임박</Red>
             </StepLine>
             <RectengleLine>
-              <GR></GR>
-              <YR></YR>
-              <RR></RR>
+              <GR />
+              <YR />
+              <RR />
             </RectengleLine>
-            <Gbox></Gbox>
+            <Gbox />
           </ShowBox>
         </AIContainer>
       </ContentContainer>
       <BuyContainer>
         <BuyTextLine>
-          <Money>{price}</Money>
+          <Money>{product?.price}</Money>
           <BuyText>원/송이</BuyText>
         </BuyTextLine>
         <ButtonLine>
           <ShopListButton
-            onClick={() => {
-              handleClickShop()
+            onClick={handleClickShop}
+            style={{
+              opacity: product ? 1 : 0.5,
+              pointerEvents: product ? 'auto' : 'none',
+              cursor: product ? 'pointer' : 'not-allowed',
             }}
           >
             <ShopText>장바구니</ShopText>
@@ -464,14 +507,14 @@ export default function ProductDetail({ value, onChange }) {
             style={{ cursor: 'pointer' }}
             onClick={() => {
               setActiveId('BuyButton')
-              HandleBuyButton()
+              // TODO: HandleBuyButton 구현 필요
             }}
           >
             <PayText>바로 결제</PayText>
           </BuyButton>
         </ButtonLine>
         {activeId === 'BuyButton' && (
-          <BuySheet onClose={() => setActiveId(null)} />
+          <BuySheet onClose={() => setOpen(false)} product={product} />
         )}
       </BuyContainer>
     </Container>
