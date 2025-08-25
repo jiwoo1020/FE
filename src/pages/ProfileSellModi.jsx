@@ -48,10 +48,13 @@ const RegisterButton = styled.div`
 export default function ProfileSellModi() {
 
   const [userData, setUserData] = useState(null)
-  const depositAccount = userData?.depositAccount;
+  const storeName = userData?.shop?.name ?? '';
+  const businessNumber = userData?.shop?.businessNumber ?? '';
+  const depositAccount = userData?.shop?.depositAccount;
   const accountNumber = depositAccount
     ? `${depositAccount.bank} ${depositAccount.number}`
     : '';
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -126,9 +129,9 @@ export default function ProfileSellModi() {
           나의 가게 정보
           </p>
          <StoreInfoContainer 
-         storeName={userData?.shopName}
-         storeNumber={userData?.business_number}
-         accountNumber={userData?.accountNumber}/>
+            storeName={storeName}
+            storeNumber={businessNumber}
+            accountNumber={accountNumber} />
         {/*<RegisterButton>등록</RegisterButton>*/}
       </MainContainer>
     </Container>
