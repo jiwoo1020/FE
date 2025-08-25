@@ -423,7 +423,11 @@ export default function ProductDetail() {
   return (
     <Container>
       <Header />
-      <img src={product?.image_url} alt="상품 이미지" />
+      <img
+        src={product?.image_url}
+        alt="상품 이미지"
+        style={{ width: '393px', height: '304px', flexShrink: '0' }}
+      />
       <StoreContainer>
         <StoreBox>
           <img
@@ -507,15 +511,18 @@ export default function ProductDetail() {
             style={{ cursor: 'pointer' }}
             onClick={() => {
               setActiveId('BuyButton')
-              // TODO: HandleBuyButton 구현 필요
             }}
           >
             <PayText>바로 결제</PayText>
           </BuyButton>
+          {activeId === 'BuyButton' && (
+            <BuySheet
+              productId={product.id}
+              onClose={() => setActiveId(null)}
+              onPurchase={order => console.log('최종 주문:', order)}
+            />
+          )}
         </ButtonLine>
-        {activeId === 'BuyButton' && (
-          <BuySheet onClose={() => setOpen(false)} product={product} />
-        )}
       </BuyContainer>
     </Container>
   )
