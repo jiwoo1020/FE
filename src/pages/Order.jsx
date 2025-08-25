@@ -95,12 +95,15 @@ export default function Order() {
         `${import.meta.env.VITE_API_URL}/api/orders`,
         {
           cart_item_ids: cartIds,
+          shipping: {
+            receiver,
+            phone,
+            addr,
+          },
           desired_delivery_date: pickedDate
             ? pickedDate.toISOString().split('T')[0]
             : new Date().toISOString().split('T')[0],
-          receiver,
-          phone,
-          addr,
+
           payment_method: paymentMethod,
         },
         {

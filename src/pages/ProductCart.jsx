@@ -109,14 +109,17 @@ export default function ProductCart() {
     const fetchCart = async () => {
       try {
         const token = localStorage.getItem('token')
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/items`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        })
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/cart/items`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+          }
+        )
 
         if (!res.ok) throw new Error('장바구니 조회 실패')
         const data = await res.json()
@@ -146,13 +149,21 @@ export default function ProductCart() {
 
   // 2. 선택/전체선택
   const toggleSelect = (id, checked) =>
-    setItems(prev => prev.map(it => (it.id === id ? { ...it, selected: checked } : it)))
+    setItems(prev =>
+      prev.map(it => (it.id === id ? { ...it, selected: checked } : it))
+    )
 
   const toggleSelectAll = checked =>
     setItems(prev => prev.map(it => ({ ...it, selected: checked })))
 
-  const allSelected = useMemo(() => items.length > 0 && items.every(it => it.selected), [items])
-  const someSelected = useMemo(() => items.some(it => it.selected) && !allSelected, [items, allSelected])
+  const allSelected = useMemo(
+    () => items.length > 0 && items.every(it => it.selected),
+    [items]
+  )
+  const someSelected = useMemo(
+    () => items.some(it => it.selected) && !allSelected,
+    [items, allSelected]
+  )
 
   useEffect(() => {
     if (selectAllRef.current) selectAllRef.current.indeterminate = someSelected
@@ -162,14 +173,17 @@ export default function ProductCart() {
   const updateQty = async (id, newQty) => {
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/items/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ quantity: newQty }),
-      })
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/cart/items/${id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ quantity: newQty }),
+        }
+      )
 
       if (!res.ok) throw new Error('수량 변경 실패')
       const data = await res.json()
@@ -199,12 +213,15 @@ export default function ProductCart() {
   const removeOne = async id => {
     try {
       const token = localStorage.getItem('token')
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/items/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/cart/items/${id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
 
       if (!res.ok) throw new Error('삭제 실패')
       setItems(prev => prev.filter(it => it.id !== id))
@@ -221,12 +238,15 @@ export default function ProductCart() {
 
       await Promise.all(
         selectedIds.map(async id => {
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart/items/${id}`, {
-            method: 'DELETE',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          })
+          const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/cart/items/${id}`,
+            {
+              method: 'DELETE',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          )
           if (!res.ok) throw new Error(`삭제 실패: ${id}`)
         })
       )

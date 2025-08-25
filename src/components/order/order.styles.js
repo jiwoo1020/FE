@@ -61,8 +61,8 @@ export const OrderTitle = styled.div`
 
 export const DetailLine = styled.div`
   display: flex;
-  width: 328px;
-  height: 87px;
+  width: 100%; /* 부모 기준 꽉 차도록 */
+  min-height: 87px;
   padding-right: 241px;
   align-items: center;
   flex-shrink: 0;
