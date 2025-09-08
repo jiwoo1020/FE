@@ -246,7 +246,7 @@ const Container = styled.div`
   max-width: 393px; /* 모바일 최대 폭 */
   margin: 0 auto;
   background: #ffffff;
-  overflow-y: auto;
+  overflow: hidden;
 `
 
 const Card = styled.div`
@@ -255,8 +255,8 @@ const Card = styled.div`
   top: 50%;
   transform: translate(-50%, calc(-50%));
   width: 90%;
-  max-width: 343px;
-  min-height: 605px;
+  max-width: 300px;
+  min-height: 595px;
 
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid #ffffff;
