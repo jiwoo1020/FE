@@ -134,11 +134,12 @@ export default function ProductCart() {
             seller: ci.seller?.shop_name,
             spec: ci.spec,
           })) || []
-
         if (location.state?.addedItem) {
-          list = [...list, location.state.addedItem]
+          const exists = list.some(it => it.id === location.state.addedItem.id)
+          if (!exists) {
+            list = [...list, location.state.addedItem]
+          }
         }
-
         setItems(list)
       } catch (err) {
         console.error('장바구니 조회 실패:', err)
@@ -295,9 +296,9 @@ export default function ProductCart() {
         </DeleteLine>
       </Up>
       <Body>
-        {items.map(item => (
+        {items.map((item, index) => (
           <Box
-            key={item.id}
+            key={`${item.id}-${index}`}
             item={item}
             onToggle={(id, checked) => toggleSelect(id, checked)}
             onInc={() => incQty(item.id)}

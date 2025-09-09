@@ -96,9 +96,9 @@ export default function Order() {
         {
           cart_item_ids: cartIds,
           shipping: {
-            receiver,
-            phone,
-            addr,
+            receiver_name: receiver,
+            receiver_phone: phone,
+            address: addr,
           },
           desired_delivery_date: pickedDate
             ? pickedDate.toISOString().split('T')[0]

@@ -204,11 +204,7 @@ export const PeopleBox = styled.div`
 
 export const DateContainer = styled.div`
   display: flex;
-  padding: 11px;
-  align-items: flex-start;
-  border-radius: 24px;
   background: #fff;
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.1);
   flex-direction: row;
   width: 343px;
 `

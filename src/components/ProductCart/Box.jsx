@@ -134,7 +134,7 @@ export default function Box({ item, onToggle, onInc, onDec, onRemove }) {
       <Right>
         <AiOutlineClose onClick={() => onRemove(item.id)} />
         <PriceTextLine>
-          <Price>{price}</Price>
+          <Price>{price * qty}</Price>
           <Won>원</Won>
         </PriceTextLine>
       </Right>

@@ -47,6 +47,12 @@ export default function OrderDatePicker({
     ...Array.from({ length: days }, (_, i) => new Date(y, m, i + 1)),
   ]
 
+  // === 오늘 기준으로 이틀 뒤 날짜 ===
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const minSelectable = new Date(today)
+  minSelectable.setDate(today.getDate() + 2)
+
   return (
     <DateContainer>
       <DateTextBox>
@@ -57,7 +63,7 @@ export default function OrderDatePicker({
           </DateBox>
           <BiCalendar />
         </DateInputWrapper>
-        <GuideText>{delivery.earliest_available} 이후 선택 가능</GuideText>
+        <GuideText>오늘 기준으로 이틀 이후부터 선택 가능</GuideText>
       </DateTextBox>
       <CalendarBox>
         <CalGrid>
@@ -66,17 +72,20 @@ export default function OrderDatePicker({
               {d}
             </DowCell>
           ))}
-          {cells.map((d, i) => (
-            <DateCell
-              key={i}
-              disabled={!d}
-              isSun={d && d.getDay() === 0}
-              selected={sameDate(d, pickedDate)}
-              onClick={() => d && setPickedDate(d)}
-            >
-              {d ? d.getDate() : ''}
-            </DateCell>
-          ))}
+          {cells.map((d, i) => {
+            const isDisabled = !d || d < minSelectable
+            return (
+              <DateCell
+                key={i}
+                disabled={isDisabled}
+                isSun={d && d.getDay() === 0}
+                selected={sameDate(d, pickedDate)}
+                onClick={() => !isDisabled && setPickedDate(d)}
+              >
+                {d ? d.getDate() : ''}
+              </DateCell>
+            )
+          })}
         </CalGrid>
       </CalendarBox>
     </DateContainer>

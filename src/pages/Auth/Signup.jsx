@@ -116,7 +116,7 @@ export default function Signup() {
       <BackgroundEllipses />
       <Header logoSrc={logoPium} onBack={() => window.history.back()} />
 
-      <Card>
+      <Card role={role}>
         <CardBlur />
 
         <TextWrap>
@@ -246,14 +246,13 @@ const Container = styled.div`
   max-width: 393px; /* 모바일 최대 폭 */
   margin: 0 auto;
   background: #ffffff;
-  overflow: hidden;
+  overflow-x: hidden;
 `
-
 const Card = styled.div`
   position: absolute;
   left: 50%;
-  top: 50%;
-  transform: translate(-50%, calc(-50%));
+  top: ${({ role }) => (role === 'seller' ? '70%' : '50%')};
+  transform: translate(-50%, -50%);
   width: 90%;
   max-width: 300px;
   min-height: 595px;
