@@ -13,6 +13,7 @@ import OrderDatePicker from '../components/order/OrderDatePicker'
 import OrderPaymentMethods from '../components/order/OrderPaymentMethods'
 import OrderSummary from '../components/order/OrderSummary'
 import { useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 export default function Order() {
   const [receiver, setReceiver] = useState('')
@@ -28,6 +29,7 @@ export default function Order() {
   const phoneRef = useRef(null)
   const addrRef = useRef(null)
 
+  const navigate = useNavigate()
   const location = useLocation()
   const selectedItems = location.state?.selectedItems ?? []
   const cartIds = selectedItems.map(item => item.id)
