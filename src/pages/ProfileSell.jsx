@@ -80,6 +80,10 @@ const ProductCard = styled.div`
   overflow: hidden;
   background-color: gray;
   cursor: pointer;
+
+   
+  background-size: cover;
+  background-position: center;
 `
 
 const ProductName = styled.div`
@@ -139,6 +143,7 @@ const ProductImg = styled.img`
   height: 61px;
   border-radius: 24px;
   flex-shrink: 0;
+  object-fit: cover; 
 `
 
 const Dot = styled.div`
@@ -243,52 +248,53 @@ export default function ProfileSell() {
     setProducts(mockNames)
   }, [])
 
-  useEffect(() => {
-    const fetchGroupPurchaseList = async () => {
-      try {
-        const rawToken = localStorage.getItem('token')
-        if (!rawToken) {
-          console.warn('🔑 토큰이 없습니다.')
-          return
-        }
+// 공동구매 불러오기
+useEffect(() => {
+  const fetchGroupPurchaseList = async () => {
+    try {
+      const rawToken = localStorage.getItem('token')
+      if (!rawToken) return
 
-        const token = rawToken.startsWith('Bearer')
-          ? rawToken
-          : `Bearer ${rawToken}`
-        console.log('📦 최종 Authorization 헤더:', token)
-        console.log('🌐 API URL:', import.meta.env.VITE_API_URL)
+      const token = rawToken.startsWith('Bearer') ? rawToken : `Bearer ${rawToken}`
 
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/group-purchases`,
-          {
-            method: 'GET',
-            headers: {
-              Accept: 'application/json',
-              Authorization: token,
-            },
-          }
-        )
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/group-purchases`, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          Authorization: token,
+        },
+      })
 
-        if (!res.ok) {
-          console.error('❌ 응답 실패:', res.status, res.statusText)
-          throw new Error('공동구매 목록 응답 실패')
-        }
+      if (!res.ok) throw new Error('공동구매 목록 응답 실패')
 
-        const data = await res.json()
-        console.log('✅ 공동구매 목록 불러오기 성공:', data)
-        setGroupBuys(Array.isArray(data?.content) ? data.content : [])
-      } catch (err) {
-        console.error('❌ 공동구매 목록 불러오기 실패', err)
-        setError(err.message || '불러오기 실패')
-      } finally {
-        setLoading(false)
-      }
+      const data = await res.json()
+      console.log('✅ 공동구매 목록 불러오기 성공:', data)
+
+      // 여기서 무조건 imageUrl로 통일
+      setGroupBuys(
+        (data.content || []).map(g => ({
+          ...g,
+          imageUrl: g.imageUrl
+            ? `${import.meta.env.VITE_API_URL}${g.imageUrl}`
+            : g.main_image_url
+            ? `${import.meta.env.VITE_API_URL}${g.main_image_url}`
+            : Flower,
+        }))
+      )
+      
+    } catch (err) {
+      console.error('❌ 공동구매 목록 불러오기 실패', err)
+      setError(err.message || '불러오기 실패')
+    } finally {
+      setLoading(false)
     }
+  }
 
-    setLoading(true)
-    setError(null)
-    fetchGroupPurchaseList()
-  }, [])
+  setLoading(true)
+  setError(null)
+  fetchGroupPurchaseList()
+}, [])
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -405,6 +411,9 @@ export default function ProfileSell() {
               <ProductCard
                 key={product.product_id}
                 onClick={() => navigate(`/product/${product.product_id}`)}
+                style={{
+                  backgroundImage: `url(${product.main_image_url || Flower})`
+                }}
               >
                 <ProductName>{product.name}</ProductName>
               </ProductCard>
@@ -452,10 +461,7 @@ export default function ProfileSell() {
               onClick={() => navigate(`/groupbuy/${item.id}`)}
             >
               <GroupBuyHeader>
-                <ProductImg
-                  src={item.imageUrl || Flower}
-                  alt="공동구매 이미지"
-                />
+                <ProductImg src={item.imageUrl || Flower} alt="공동구매 이미지" />
                 <GroupBuyInfo>
                   <State>
                     <Dot />

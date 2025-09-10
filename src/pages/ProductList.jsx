@@ -391,7 +391,8 @@ export default function ProductList() {
                   {/* PictureBox는 styled.div라 src/alt 적용이 안됨 → styled.img로 교체 필요 */}
                   <PictureBox
                     as="img"
-                    src={p.image_url || '/placeholder.png'}
+                    src={p.imageUrl
+                      || '/placeholder.png'}
                     alt={p.name || '상품 이미지'}
                   />
                   <ProductTextBox>
