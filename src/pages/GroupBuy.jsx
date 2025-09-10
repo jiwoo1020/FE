@@ -11,40 +11,52 @@ export default function GroupBuy() {
   const location = useLocation()
   const [groupList, setGroupList] = useState([])
 
-  useEffect(() => {
-    const fetchGroupBuys = async () => {
-      try {
-        const token = localStorage.getItem('token')
+ useEffect(() => {
+  const fetchGroupBuys = async () => {
+    try {
+      const token = localStorage.getItem('token')
 
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/group-purchases`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        )
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/group-purchases`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
 
-        let list = response.data?.content ?? []
-        const appliedList = JSON.parse(
-          localStorage.getItem('appliedList') || '[]'
-        )
+      console.log('📦 전체 응답:', response)
+      console.log('✅ response.data:', response.data)
 
-        // 해당 아이템에 joined: true 붙이기
-        list = list.map(item =>
-          appliedList.includes(item.id) ? { ...item, joined: true } : item
-        )
+      let list = response.data?.content ?? []
 
-        setGroupList(list)
-      } catch (error) {
-        console.error('조회 중 오류:', error)
-        alert('조회 중 오류가 발생했습니다.')
-      }
+      // ✅ 이미지 필드 통일 (API가 imageUrl만 준다면 여기서 매핑)
+      list = list.map(item => ({
+        ...item,
+        imageUrl: item.imageUrl || item.image_url || item.mainImageUrl || PeonyImg,
+      }))
+
+      const appliedList = JSON.parse(localStorage.getItem('appliedList') || '[]')
+
+
+      list = list.map(item => ({
+        ...item,
+        imageUrl: item.imageUrl
+          ? `${import.meta.env.VITE_API_URL.replace('/api', '')}${item.imageUrl}`
+          : PeonyImg,
+      }))
+
+      setGroupList(list)
+    } catch (error) {
+      console.error('❌ 조회 중 오류:', error)
+      alert('조회 중 오류가 발생했습니다.')
     }
+  }
 
-    fetchGroupBuys()
-  }, [location.state?.appliedId])
+  fetchGroupBuys()
+}, [location.state?.appliedId])
+
 
   // const handleApply = id => {
   //   setGroupList(prev =>

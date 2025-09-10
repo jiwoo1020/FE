@@ -37,7 +37,8 @@ export default function Categories({ items = [] }) {
               },
             ]
         ).map((it, i) => {
-          const imageUrl = it.imageMainUrl || (it.images?.[0]?.imageUrl ?? null)
+          const imageUrl = it.imageUrl || it.imageMainUrl || it.main_image_url || (it.images?.[0]?.imageUrl ?? null)
+
 
           return (
             <Item key={i} onClick={() => navigate(`/product/${it.id}`)}>

@@ -42,9 +42,14 @@ export default function GroupBuyCreate() {
     navigate('/product', { state: { from: '/groupbuy/create' } })
     axios
       .get(`${import.meta.env.VITE_API_URL}/api/product`)
-      .then(res => console.log(res.data))
-      .catch(err => console.error(err))
+      .then(res => {
+        console.log('📦 전체 응답:', res)
+        console.log('✅ 응답 data:', res.data)
+        console.log('📑 상품 목록:', res.data?.data?.items || res.data)
+      })
+      .catch(err => console.error('❌ 상품 목록 조회 실패:', err))
   }
+  
   function formatDateTimeLocal(dateStr) {
     if (!dateStr) return null
     const d = new Date(dateStr)
@@ -137,7 +142,7 @@ export default function GroupBuyCreate() {
           </Row>
         ) : (
           <Row>
-            <Image src={selected.image} alt="상품 이미지" />
+            <Image src={selected.imageUrl || selected.image || PeonyImg} alt="상품 이미지" />
             <InfoCol>
               <InfoBox>
                 <InfoRow>

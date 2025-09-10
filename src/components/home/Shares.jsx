@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 export default function Shares({ cards = [] }) {
   const navigate = useNavigate()
 
-  const data = cards.length
+  const data = (cards.length
     ? cards
     : [
         {
@@ -14,8 +14,16 @@ export default function Shares({ cards = [] }) {
           price: 28000,
           currentParticipants: 14,
           maxParticipants: 20,
+          imageUrl: '/uploads/sample.jpg', 
         },
       ]
+  ).map(c => ({
+    ...c,
+    imageUrl: c.imageUrl?.startsWith('/')
+      ? `${import.meta.env.VITE_API_URL.replace('/api', '')}${c.imageUrl}`
+      : c.imageUrl,
+  }))
+  
 
   return (
     <Wrap>
@@ -34,7 +42,13 @@ export default function Shares({ cards = [] }) {
           return (
             <Card key={c.id}>
               <Header>
-                <FloImg />
+              <FloImg
+                style={{
+                  backgroundImage: `url(${c.imageUrl})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
                 <ShopName>
                   | {c.productName} <br />| {c.farmName}
                 </ShopName>

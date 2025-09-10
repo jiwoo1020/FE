@@ -406,7 +406,7 @@ export default function ProductDetail() {
             name: productData.name,
             info: productData.info,
             price: productData.price,
-            image_url: productData.imageMainUrl || FlowerImg,
+            image_url: productData.imageUrl || FlowerImg,
             shop_name: productData.shopName,
           })
 
@@ -426,7 +426,12 @@ export default function ProductDetail() {
       <img
         src={product?.image_url}
         alt="상품 이미지"
-        style={{ width: '393px', height: '304px', flexShrink: '0' }}
+        style={{
+          width: '393px',
+          height: '304px',
+          objectFit: 'cover',   // 비율 유지하면서 꽉 채움
+          borderRadius: '0px',  // 필요 시 둥근 모서리 제거/추가 가능
+        }}
       />
       <StoreContainer>
         <StoreBox>
